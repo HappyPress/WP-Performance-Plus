@@ -1,0 +1,24 @@
+/* 
+ * PerformancePlus Public CSS 
+ * This file contains styles for public-facing elements of the plugin.
+ */
+
+.performanceplus-notification {
+    background-color: #4caf50; /* Green */
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+}
+
+.performanceplus-notification.error {
+    background-color: #f44336; /* Red */
+}
+
+.performanceplus-notification.warning {
+    background-color: #ff9800; /* Orange */
+}

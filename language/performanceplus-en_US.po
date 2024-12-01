@@ -1,0 +1,48 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PerformancePlus 1.0\\n"
+"Report-Msgid-Bugs-To: \\n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\\n"
+"Last-Translator: Your Name <your.email@example.com>\\n"
+"Language-Team: English <your.email@example.com>\\n"
+"Language: en_US\\n"
+"MIME-Version: 1.0\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
+
+msgid "Welcome to PerformancePlus!"
+msgstr "Welcome to PerformancePlus!"
+
+msgid "Thank you for choosing PerformancePlus to optimize your WordPress site."
+msgstr "Thank you for choosing PerformancePlus to optimize your WordPress site."
+
+msgid "Get Started"
+msgstr "Get Started"
+
+msgid "General Settings"
+msgstr "General Settings"
+
+msgid "Cloudflare Settings"
+msgstr "Cloudflare Settings"
+
+msgid "StackPath Settings"
+msgstr "StackPath Settings"
+
+msgid "KeyCDN Settings"
+msgstr "KeyCDN Settings"
+
+msgid "BunnyCDN Settings"
+msgstr "BunnyCDN Settings"
+
+msgid "CloudFront Settings"
+msgstr "CloudFront Settings"
+
+msgid "Local Optimizations"
+msgstr "Local Optimizations"
+
+msgid "User Guide & FAQ"
+msgstr "User Guide & FAQ"
+
+msgid "Support"
+msgstr "Support"
