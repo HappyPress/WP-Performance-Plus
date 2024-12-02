@@ -1,0 +1,230 @@
+/* Wizard Container */
+.wizard-container {
+    max-width: 900px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+}
+
+/* Step Indicators */
+.step-indicators {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 20px 30px;
+    list-style: none;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    margin: 0 15px;
+    position: relative;
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #f0f0f1;
+    color: #50575e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 8px;
+    font-size: 12px;
+}
+
+.step-indicator.active .step-number {
+    background: #2271b1;
+    color: #fff;
+}
+
+.step-indicator.completed .step-number {
+    background: #00a32a;
+    color: #fff;
+}
+
+.step-indicator.completed .step-number:after {
+    content: "✓";
+    font-size: 12px;
+}
+
+.step-label {
+    font-size: 13px;
+    color: #50575e;
+}
+
+.step-indicator.active .step-label {
+    color: #2271b1;
+    font-weight: 600;
+}
+
+.step-indicator.completed .step-label {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+/* Settings Card */
+.setting-card {
+    background: #fff;
+    padding: 30px;
+    margin: 0;
+}
+
+.setting-card h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #1d2327;
+}
+
+.setting-card .description {
+    margin: 0 0 25px;
+    color: #646970;
+    font-size: 14px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    padding: 20px;
+    background: #f6f7f7;
+    border-radius: 4px;
+    border: 1px solid #dcdcde;
+}
+
+.toggle-switch input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex-shrink: 0;
+    margin: 2px 15px 0 0;
+}
+
+.toggle-slider:before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+input[type="checkbox"]:checked + .toggle-slider {
+    background: #2271b1;
+}
+
+input[type="checkbox"]:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+.toggle-content {
+    flex-grow: 1;
+}
+
+.toggle-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.toggle-description {
+    color: #646970;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Navigation */
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+    border-top: 1px solid #dcdcde;
+    background: #f6f7f7;
+}
+
+.wizard-navigation .button {
+    min-width: 100px;
+    height: auto;
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.wizard-navigation .button-primary {
+    background: #2271b1;
+    border-color: #2271b1;
+}
+
+/* Welcome Header */
+.welcome-header {
+    text-align: center;
+    padding: 30px 20px;
+    background: #2271b1;
+    color: #fff;
+    border-radius: 8px 8px 0 0;
+}
+
+.welcome-header h1 {
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.welcome-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 782px) {
+    .step-indicators {
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 15px;
+    }
+    
+    .step-indicator {
+        margin: 5px 10px;
+    }
+    
+    .setting-card {
+        padding: 20px;
+    }
+    
+    .toggle-switch {
+        padding: 15px;
+    }
+    
+    .wizard-navigation {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .wizard-navigation .button {
+        width: 100%;
+        text-align: center;
+    }
+} 

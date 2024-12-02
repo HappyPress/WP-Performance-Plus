@@ -1,0 +1,505 @@
+/* Variables */
+:root {
+    --primary: #4C6FFF;
+    --primary-dark: #3D5BCC;
+    --primary-light: #E5E9FF;
+    --success: #00C48C;
+    --success-light: #E6F8F3;
+    --warning: #FFB547;
+    --warning-light: #FFF7EC;
+    --danger: #FF5C75;
+    --danger-light: #FFE5E9;
+    --background: #F8F9FD;
+    --card-bg: #FFFFFF;
+    --text: #1E2022;
+    --text-secondary: #677788;
+    --border: #E7EAF3;
+    --shadow: 0 2px 5px rgba(140, 152, 164, 0.2);
+    --shadow-hover: 0 5px 15px rgba(140, 152, 164, 0.3);
+}
+
+/* Main Wizard Container */
+.onboarding-wizard {
+    max-width: 900px;
+    margin: 40px auto;
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Wizard Header */
+.wizard-header {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, var(--primary), #6B8AFF);
+    color: white;
+}
+
+.wizard-header h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.wizard-header .dashicons {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+}
+
+.wizard-subtitle {
+    margin: 15px 0 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+/* Progress Steps */
+.wizard-progress {
+    padding: 30px 60px;
+    background: var(--background);
+    position: relative;
+}
+
+.progress-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 0 auto;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(-45deg, var(--primary) 0%, #6B8AFF 50%, var(--primary) 100%);
+    background-size: 200% 200%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    animation: gradientBG 3s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.progress-line-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(-45deg, var(--primary) 0%, #6B8AFF 50%, var(--primary) 100%);
+    background-size: 200% 200%;
+    animation: gradientBG 3s ease infinite;
+    transition: width 0.5s ease;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 0 50px;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 50px;
+    right: 50px;
+    height: 2px;
+    background: var(--border);
+    z-index: 1;
+}
+
+.step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.step-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(140, 152, 164, 0.1);
+}
+
+.step.active .step-icon {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: scale(1.1);
+}
+
+.step.completed .step-icon {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.step-number {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+    color: var(--primary);
+}
+
+.step.completed .step-number {
+    display: none;
+}
+
+.step-check {
+    position: absolute;
+    color: white;
+    font-size: 24px;
+    display: none;
+    animation: scaleIn 0.3s ease;
+}
+
+.step.completed .step-check {
+    display: block;
+}
+
+.step-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+    text-align: center;
+}
+
+.step.active .step-label {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.step.completed .step-label {
+    color: var(--success);
+    font-weight: 600;
+}
+
+/* Step Content */
+.wizard-content {
+    padding: 40px;
+}
+
+.step-panel {
+    display: none;
+}
+
+.step-panel.active {
+    display: block;
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.step-header .step-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--primary);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(76, 111, 255, 0.2);
+}
+
+.step-header .step-icon .dashicons {
+    color: white;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.step-title h3 {
+    margin: 0 0 10px;
+    font-size: 24px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.step-title p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Setting Cards */
+.setting-card {
+    background: var(--background);
+    border-radius: 16px;
+    padding: 30px;
+    margin-top: 20px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+    cursor: pointer;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary, #2271b1);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-content {
+    flex: 1;
+    margin-left: 15px;
+}
+
+.toggle-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text, #1d2327);
+}
+
+.toggle-description {
+    color: var(--text-secondary, #50575e);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Setting Benefits */
+.setting-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.benefit-item .dashicons {
+    color: var(--primary);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    padding: 8px;
+    background: var(--primary-light);
+    border-radius: 8px;
+}
+
+.benefit-item span {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* CDN Selector */
+.cdn-selector {
+    margin-bottom: 25px;
+}
+
+.enhanced-select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23677788" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+}
+
+.enhanced-select:hover, .enhanced-select:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+/* Wizard Footer */
+.wizard-footer {
+    padding: 25px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--background);
+}
+
+.wizard-footer .button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    height: auto;
+    font-size: 15px;
+    font-weight: 500;
+    min-width: 120px;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.wizard-footer .button-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.wizard-footer .button-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 111, 255, 0.2);
+}
+
+.wizard-footer .button .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 782px) {
+    .onboarding-wizard {
+        margin: 20px;
+    }
+
+    .wizard-progress {
+        padding: 20px;
+    }
+
+    .progress-steps {
+        margin: 0 20px;
+    }
+
+    .step-label {
+        font-size: 12px;
+    }
+
+    .setting-benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .wizard-footer {
+        padding: 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .wizard-footer .button {
+        width: 100%;
+    }
+
+    .step-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+} 

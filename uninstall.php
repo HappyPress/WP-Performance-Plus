@@ -8,7 +8,6 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 $option_names = [
     'performanceplus_settings',
     'performanceplus_cloudflare_settings',
-    'performanceplus_stackpath_settings',
     'performanceplus_keycdn_settings',
     'performanceplus_bunnycdn_settings',
     'performanceplus_cloudfront_settings',

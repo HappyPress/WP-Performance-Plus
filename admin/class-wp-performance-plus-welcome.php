@@ -189,6 +189,7 @@ class PerformancePlus_Welcome {
         <div class="wizard-step">
             <h2><?php esc_html_e('Configure Optimizations', 'performanceplus'); ?></h2>
             <form method="post" action="">
+                <?php wp_nonce_field('performanceplus_optimization_settings', 'optimization_nonce'); ?>
                 <div class="optimization-options">
                     <label>
                         <input type="checkbox" name="enable_minification" checked>
@@ -203,13 +204,25 @@ class PerformancePlus_Welcome {
                     <a href="<?php echo esc_url(add_query_arg('step', 2)); ?>" class="button">
                         <?php esc_html_e('Previous', 'performanceplus'); ?>
                     </a>
-                    <button type="submit" class="button button-primary">
+                    <button type="submit" name="save_optimization_settings" class="button button-primary">
                         <?php esc_html_e('Save & Continue', 'performanceplus'); ?>
                     </button>
                 </div>
             </form>
         </div>
         <?php
+
+        // Handle form submission
+        if (isset($_POST['save_optimization_settings']) && check_admin_referer('performanceplus_optimization_settings', 'optimization_nonce')) {
+            $settings = [
+                'enable_minification' => isset($_POST['enable_minification']) ? true : false,
+                'enable_db_cleanup' => isset($_POST['enable_db_cleanup']) ? true : false
+            ];
+            
+            $this->update_wizard_state('optimization_settings', $settings);
+            wp_redirect(add_query_arg('step', 4));
+            exit;
+        }
     }
 
     private function render_step_finish() {
