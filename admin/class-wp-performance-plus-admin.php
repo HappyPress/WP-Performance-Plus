@@ -36,56 +36,85 @@ class WP_Performance_Plus_Admin {
     /**
      * Register the stylesheets for the admin area.
      */
-    public function enqueue_styles() {
+    public function enqueue_styles($hook) {
+        // Only load on plugin pages
+        if (strpos($hook, 'wp-performance-plus') === false) {
+            return;
+        }
+
+        // Font Awesome
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
+            array(),
+            '5.15.3'
+        );
+
+        // Inter Font
+        wp_enqueue_style(
+            'inter-font',
+            'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+            array(),
+            null
+        );
+
         // Base admin styles
         wp_enqueue_style(
             'wp-performance-plus-admin',
-            plugin_dir_url(__FILE__) . 'css/wp-performance-plus-admin.css',
-            array(),
+            plugins_url('css/wp-performance-plus-admin.css', __FILE__),
+            array('font-awesome', 'inter-font'),
             $this->version
         );
 
         // Onboarding/welcome page styles
-        if (isset($_GET['page']) && $_GET['page'] === 'wp-performance-plus') {
-            wp_enqueue_style(
-                'wp-performance-plus-onboarding',
-                plugin_dir_url(__FILE__) . 'css/wp-performance-plus-onboarding.css',
-                array('wp-performance-plus-admin'),
-                $this->version
-            );
-        }
+        wp_enqueue_style(
+            'wp-performance-plus-onboarding',
+            plugins_url('css/wp-performance-plus-onboarding.css', __FILE__),
+            array('wp-performance-plus-admin'),
+            $this->version
+        );
+
+        // Add inline style for debugging
+        wp_add_inline_style('wp-performance-plus-onboarding', '
+            /* Debug styles */
+            // .wp-performance-plus-onboarding {
+            //     border: 5px solid blue !important;
+            // }
+        ');
     }
 
     /**
      * Register the JavaScript for the admin area.
      */
-    public function enqueue_scripts() {
+    public function enqueue_scripts($hook) {
+        // Only load on plugin pages
+        if (strpos($hook, 'wp-performance-plus') === false) {
+            return;
+        }
+
         wp_enqueue_script(
             'wp-performance-plus-admin',
-            plugin_dir_url(__FILE__) . 'js/wp-performance-plus-admin.js',
+            plugins_url('js/wp-performance-plus-admin.js', __FILE__),
             array('jquery'),
             $this->version,
             true
         );
 
-        // Onboarding/welcome page scripts
-        if (isset($_GET['page']) && $_GET['page'] === 'wp-performance-plus') {
-            wp_enqueue_script(
-                'wp-performance-plus-wizard',
-                plugin_dir_url(__FILE__) . 'js/wp-performance-plus-wizard.js',
-                array('jquery', 'wp-performance-plus-admin'),
-                $this->version,
-                true
-            );
+        wp_enqueue_script(
+            'wp-performance-plus-wizard',
+            plugins_url('js/wp-performance-plus-wizard.js', __FILE__),
+            array('jquery', 'wp-performance-plus-admin'),
+            $this->version,
+            true
+        );
 
-            wp_localize_script('wp-performance-plus-wizard', 'wpPerformancePlusWizard', array(
-                'ajaxurl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('wp_performance_plus_wizard'),
-                'strings' => array(
-                    'error' => __('An error occurred while saving settings. Please try again.', 'wp-performance-plus')
-                )
-            ));
-        }
+        wp_localize_script('wp-performance-plus-wizard', 'wpPerformancePlusWizard', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('wp_performance_plus_wizard'),
+            'strings' => array(
+                'error' => __('An error occurred while saving settings. Please try again.', 'wp-performance-plus')
+            )
+        ));
     }
 
     /**

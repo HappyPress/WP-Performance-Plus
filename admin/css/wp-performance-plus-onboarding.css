@@ -1,285 +1,300 @@
-/* WP Performance Plus Onboarding Styles */
-
 .wp-performance-plus-onboarding {
-    max-width: 1200px;
-    margin: 20px auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 1.5rem;
 }
 
-.onboarding-header {
+/* Header */
+.plugin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 30px;
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 1.5rem;
 }
 
-.brand .logo {
-    height: 32px;
-    width: auto;
-}
-
-.language-selector select {
-    padding: 8px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    background: #fff;
-    font-size: 14px;
-}
-
-.onboarding-container {
-    display: flex;
-    gap: 60px;
-    padding: 40px;
-    min-height: 600px;
-}
-
-.main-content {
-    flex: 1;
-}
-
-.main-content h1 {
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 8px;
-    color: #1a1a1a;
-}
-
-.subtitle {
-    color: #666;
-    font-size: 16px;
-    margin-bottom: 40px;
-}
-
-.connection-section {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.connection-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.connection-icon {
-    width: 32px;
-    height: 32px;
-}
-
-.connection-info {
-    flex: 1;
-}
-
-.connection-info h3 {
-    margin: 0 0 4px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.connection-info p {
+.plugin-header h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
     margin: 0;
-    color: #666;
-    font-size: 14px;
 }
 
-.connection-status {
-    font-size: 14px;
-    color: #4CAF50;
-}
-
-.revoke-access {
-    color: #666;
-    background: none;
+.language-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #e5e7eb;
+    color: #1f2937;
+    border-radius: 0.5rem;
     border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
 }
 
-.connected-account {
+/* Main Content Container */
+.main-container {
+    background-color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+}
+
+/* Title Section */
+.main-title {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.main-title h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.main-title p {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Settings Section */
+.settings-section {
+    padding: 1.5rem;
+}
+
+/* Basics Card */
+.basics-card {
+    border: 1px solid #3b82f6;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.basics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #eff6ff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.basics-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.basics-header p {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.config-status {
+    color: #16a34a;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Feature Row */
+.feature-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    margin-bottom: 16px;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.service-icon {
-    width: 24px;
-    height: 24px;
+.feature-row:last-child {
+    border-bottom: none;
 }
 
-.account-email {
-    flex: 1;
-    font-size: 14px;
-}
-
-.connection-badge {
-    font-size: 12px;
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.1);
-    padding: 4px 8px;
-    border-radius: 4px;
-}
-
-.connect-another {
-    color: #1a73e8;
-    background: none;
-    border: none;
-    padding: 8px 0;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100%;
-    text-align: left;
-}
-
-.connect-service {
-    background: #1a73e8;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.help-text {
-    color: #666;
-    font-size: 14px;
-    margin-top: 30px;
-}
-
-.progress-timeline {
-    width: 280px;
-    padding-top: 40px;
-}
-
-.timeline-step {
+.feature-info {
     display: flex;
-    gap: 16px;
-    position: relative;
-    padding-bottom: 40px;
+    align-items: center;
+    gap: 1rem;
 }
 
-.timeline-step:not(:last-child):before {
+.feature-icon {
+    color: #3b82f6;
+}
+
+.feature-text h4 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0 0 0.25rem 0;
+}
+
+.feature-text p {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    width: 2.5rem;
+    height: 1.25rem;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.toggle-slider:after {
     content: '';
     position: absolute;
-    left: 15px;
-    top: 30px;
-    bottom: 0;
-    width: 2px;
-    background: #e0e0e0;
-}
-
-.timeline-step.completed:before {
-    background: #4CAF50;
-}
-
-.step-indicator {
-    width: 32px;
-    height: 32px;
+    top: 2px;
+    left: 2px;
+    width: 1rem;
+    height: 1rem;
+    background-color: white;
+    border: 1px solid #d1d5db;
     border-radius: 50%;
-    background: #fff;
-    border: 2px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+input:checked + .toggle-slider {
+    background-color: #16a34a;
+}
+
+input:checked + .toggle-slider:after {
+    transform: translateX(1.25rem);
+    border-color: white;
+}
+
+/* Other Settings */
+.other-settings {
+    padding: 1.5rem;
+}
+
+.settings-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.settings-card:last-child {
+    margin-bottom: 0;
+}
+
+.settings-info h4 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0 0 0.25rem 0;
+}
+
+.settings-info p {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.configure-button {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+/* Footer */
+.plugin-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.plugin-footer p {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.contact-button {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media screen and (max-width: 640px) {
+    .wp-performance-plus-onboarding {
+        padding: 1rem;
+    }
+
+    .plugin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .basics-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .feature-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .toggle-switch {
+        margin-left: 2rem;
+    }
+
+    .settings-card {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .configure-button,
+    .contact-button {
+        width: 100%;
+    }
+
+    .plugin-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+}
+
+.plugin-title {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 1;
+    gap: 0.75rem;
 }
 
-.timeline-step.completed .step-indicator {
-    background: #4CAF50;
-    border-color: #4CAF50;
-    color: #fff;
-}
-
-.timeline-step.active .step-indicator {
-    border-color: #1a73e8;
-    color: #1a73e8;
-}
-
-.step-content h4 {
-    margin: 0 0 4px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.step-content p {
-    margin: 0;
-    color: #666;
-    font-size: 13px;
-}
-
-.onboarding-footer {
-    padding: 30px 40px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.help-section h4 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.help-section p {
-    margin: 0 0 16px;
-    color: #666;
-    font-size: 14px;
-}
-
-.contact-support {
-    background: #fff;
-    border: 1px solid #1a73e8;
-    color: #1a73e8;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-/* WordPress Admin Compatibility */
-.wp-performance-plus-onboarding {
-    margin-left: -20px;
-    margin-right: -20px;
-}
-
-/* Responsive Styles */
-@media screen and (max-width: 782px) {
-    .wp-performance-plus-onboarding {
-        margin-left: -10px;
-        margin-right: -10px;
-    }
-
-    .onboarding-container {
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .progress-timeline {
-        width: 100%;
-        order: -1;
-        padding-top: 0;
-        margin-bottom: 40px;
-    }
-
-    .connection-header {
-        flex-wrap: wrap;
-    }
-
-    .revoke-access {
-        width: 100%;
-        text-align: left;
-        padding-left: 48px;
-    }
+.plugin-icon {
+    color: #eab308;
+    font-size: 1.5rem;
 } 
