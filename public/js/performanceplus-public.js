@@ -1,11 +1,11 @@
 /**
- * PerformancePlus Public JavaScript
+ * WPPerformancePlus Public JavaScript
  * This file contains JavaScript for public-facing interactions of the plugin.
  */
 
 document.addEventListener('DOMContentLoaded', function () {
     // Notification close button functionality
-    const notifications = document.querySelectorAll('.performanceplus-notification');
+    const notifications = document.querySelectorAll('.wp_performanceplus-notification');
     notifications.forEach(notification => {
         const closeButton = document.createElement('span');
         closeButton.innerText = '×';

@@ -1,7 +1,7 @@
 /**
  * Handles server-level optimizations
  */
-class PerformancePlus_Server {
+class WPPerformancePlus_Server {
     public function setup_htaccess_rules() {
         // Browser caching rules
         $rules = "

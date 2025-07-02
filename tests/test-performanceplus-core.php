@@ -1,30 +1,30 @@
 <?php
 /**
- * Class Test_PerformancePlus_Core
+ * Class Test_WPPerformancePlus_Core
  *
  * @package Performance_Plus
  */
 
-class Test_PerformancePlus_Core extends WP_UnitTestCase {
+class Test_WPPerformancePlus_Core extends WP_UnitTestCase {
     private $plugin;
     private $debug;
 
     public function setUp(): void {
         parent::setUp();
-        $this->plugin = new PerformancePlus();
-        $this->debug = new PerformancePlus_Debug();
+        $this->plugin = new WPPerformancePlus();
+        $this->debug = new WPPerformancePlus_Debug();
     }
 
     public function test_plugin_initialization() {
-        $this->assertInstanceOf(PerformancePlus::class, $this->plugin);
-        $this->assertInstanceOf(PerformancePlus_Loader::class, $this->plugin->get_loader());
-        $this->assertEquals('performanceplus', $this->plugin->get_plugin_name());
+        $this->assertInstanceOf(WPPerformancePlus::class, $this->plugin);
+        $this->assertInstanceOf(WPPerformancePlus_Loader::class, $this->plugin->get_loader());
+        $this->assertEquals('wp_performanceplus', $this->plugin->get_plugin_name());
         $this->assertNotEmpty($this->plugin->get_version());
     }
 
     public function test_debug_logging() {
         // Enable debug mode
-        update_option('performanceplus_debug_mode', true);
+        update_option('wp_performanceplus_debug_mode', true);
         
         // Test different log levels
         $this->debug->log('Test debug message', 'debug');
@@ -33,7 +33,7 @@ class Test_PerformancePlus_Core extends WP_UnitTestCase {
         $this->debug->log('Test error message', 'error');
         
         // Get log contents
-        $log_contents = file_get_contents(WP_CONTENT_DIR . '/performanceplus-debug.log');
+        $log_contents = file_get_contents(WP_CONTENT_DIR . '/wp_performanceplus-debug.log');
         
         // Assert log contains our messages
         $this->assertStringContainsString('DEBUG: Test debug message', $log_contents);
@@ -44,7 +44,7 @@ class Test_PerformancePlus_Core extends WP_UnitTestCase {
 
     public function test_settings() {
         // Test default settings
-        $settings = get_option('performanceplus_settings');
+        $settings = get_option('wp_performanceplus_settings');
         $this->assertIsArray($settings);
         
         // Test setting updates
@@ -53,9 +53,9 @@ class Test_PerformancePlus_Core extends WP_UnitTestCase {
             'combine_files' => true,
             'lazy_loading' => true
         ];
-        update_option('performanceplus_settings', $new_settings);
+        update_option('wp_performanceplus_settings', $new_settings);
         
-        $updated_settings = get_option('performanceplus_settings');
+        $updated_settings = get_option('wp_performanceplus_settings');
         $this->assertEquals($new_settings, $updated_settings);
     }
 
@@ -70,7 +70,7 @@ class Test_PerformancePlus_Core extends WP_UnitTestCase {
         
         $found_menu = false;
         foreach ($menu as $menu_item) {
-            if (isset($menu_item[2]) && $menu_item[2] === 'performanceplus') {
+            if (isset($menu_item[2]) && $menu_item[2] === 'wp_performanceplus') {
                 $found_menu = true;
                 break;
             }
@@ -80,10 +80,10 @@ class Test_PerformancePlus_Core extends WP_UnitTestCase {
 
     public function tearDown(): void {
         // Clean up
-        delete_option('performanceplus_debug_mode');
-        delete_option('performanceplus_settings');
-        if (file_exists(WP_CONTENT_DIR . '/performanceplus-debug.log')) {
-            unlink(WP_CONTENT_DIR . '/performanceplus-debug.log');
+        delete_option('wp_performanceplus_debug_mode');
+        delete_option('wp_performanceplus_settings');
+        if (file_exists(WP_CONTENT_DIR . '/wp_performanceplus-debug.log')) {
+            unlink(WP_CONTENT_DIR . '/wp_performanceplus-debug.log');
         }
         parent::tearDown();
     }

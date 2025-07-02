@@ -1,5 +1,5 @@
 <?php
-class PerformancePlus_Cache {
+class WPPerformancePlus_Cache {
     public function setup_object_cache() {
         // Setup WordPress object caching
     }

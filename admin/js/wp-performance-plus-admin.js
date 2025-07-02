@@ -213,7 +213,7 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         $('.onboarding-overlay').fadeOut(400, function() {
-                            $('.performanceplus-dashboard')
+                            $('.wp_performanceplus-dashboard')
                                 .attr('data-onboarding-complete', 'true')
                                 .find('.dashboard-header, .dashboard-grid')
                                 .fadeIn();

@@ -1,7 +1,7 @@
 /**
  * Handles asset optimization without third-party services
  */
-class PerformancePlus_Assets {
+class WPPerformancePlus_Assets {
     public function optimize_images() {
         // Image optimization using built-in PHP GD or Imagick
     }

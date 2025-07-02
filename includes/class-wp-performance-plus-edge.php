@@ -1,7 +1,7 @@
 /**
  * Implements edge caching using Service Workers
  */
-class PerformancePlus_Edge {
+class WPPerformancePlus_Edge {
     public function register_service_worker() {
         add_action('wp_footer', function() {
             ?>

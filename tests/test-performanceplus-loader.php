@@ -1,20 +1,20 @@
 <?php
 /**
- * Class Test_PerformancePlus_Loader
+ * Class Test_WPPerformancePlus_Loader
  *
  * @package Performance_Plus
  */
-class Test_PerformancePlus_Loader extends WP_UnitTestCase {
+class Test_WPPerformancePlus_Loader extends WP_UnitTestCase {
     private $loader;
 
     public function setUp(): void {
         parent::setUp();
-        $this->loader = PerformancePlus_Loader::get_instance();
+        $this->loader = WPPerformancePlus_Loader::get_instance();
     }
 
     public function test_loader_singleton() {
-        $loader1 = PerformancePlus_Loader::get_instance();
-        $loader2 = PerformancePlus_Loader::get_instance();
+        $loader1 = WPPerformancePlus_Loader::get_instance();
+        $loader2 = WPPerformancePlus_Loader::get_instance();
         
         $this->assertSame($loader1, $loader2, 'Loader should maintain singleton instance');
     }

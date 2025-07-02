@@ -108,7 +108,7 @@ class WP_Performance_Plus_Admin {
             true
         );
 
-        wp_localize_script('wp-performance-plus-wizard', 'wpPerformancePlusWizard', array(
+        wp_localize_script('wp-performance-plus-wizard', 'wpWPPerformancePlusWizard', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wp_performance_plus_wizard'),
             'strings' => array(
@@ -353,7 +353,7 @@ class WP_Performance_Plus_Admin {
 
             // Clear page cache if enabled
             if (!empty($this->settings['cache_enabled'])) {
-                $cache = new PerformancePlus_Cache();
+                $cache = new WPPerformancePlus_Cache();
                 $cache->clear_all();
             }
 
@@ -374,7 +374,7 @@ class WP_Performance_Plus_Admin {
         }
 
         try {
-            $optimizer = new PerformancePlus_Optimizer();
+            $optimizer = new WPPerformancePlus_Optimizer();
             $result = $optimizer->optimize_images();
             wp_send_json_success($result);
         } catch (Exception $e) {
@@ -393,7 +393,7 @@ class WP_Performance_Plus_Admin {
         }
 
         try {
-            $optimizer = new PerformancePlus_Optimizer();
+            $optimizer = new WPPerformancePlus_Optimizer();
             $result = $optimizer->optimize_database();
             wp_send_json_success($result);
         } catch (Exception $e) {

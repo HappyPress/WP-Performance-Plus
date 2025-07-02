@@ -18,7 +18,7 @@ jQuery(document).ready(function($) {
             url: performancePlusAdmin.ajaxurl,
             type: 'POST',
             data: {
-                action: 'performanceplus_optimize_database',
+                action: 'wp_performanceplus_optimize_database',
                 nonce: performancePlusAdmin.nonce
             },
             success: function(response) {

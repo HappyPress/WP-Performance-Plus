@@ -27,12 +27,12 @@ jQuery(document).ready(function($) {
 
         // Save step data via AJAX
         $.ajax({
-            url: wpPerformancePlusWizard.ajaxurl,
+            url: wpWPPerformancePlusWizard.ajaxurl,
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'wp_performance_plus_save_step',
-                security: wpPerformancePlusWizard.nonce,
+                security: wpWPPerformancePlusWizard.nonce,
                 step: currentStep,
                 data: JSON.stringify(stepData)
             },
@@ -49,12 +49,12 @@ jQuery(document).ready(function($) {
                         updateStepVisibility();
                     }
                 } else {
-                    alert(response.data.message || wpPerformancePlusWizard.strings.error);
+                    alert(response.data.message || wpWPPerformancePlusWizard.strings.error);
                 }
             },
             error: function(xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert(wpPerformancePlusWizard.strings.error);
+                alert(wpWPPerformancePlusWizard.strings.error);
             }
         });
     });
@@ -98,24 +98,24 @@ jQuery(document).ready(function($) {
         
         // Save all settings via AJAX
         $.ajax({
-            url: wpPerformancePlusWizard.ajaxurl,
+            url: wpWPPerformancePlusWizard.ajaxurl,
             type: 'POST',
             dataType: 'json',
             data: {
                 action: 'wp_performance_plus_save_onboarding',
-                security: wpPerformancePlusWizard.nonce,
+                security: wpWPPerformancePlusWizard.nonce,
                 data: JSON.stringify(formData)
             },
             success: function(response) {
                 if (response.success) {
                     window.location.href = response.data.redirect;
                 } else {
-                    alert(response.data.message || wpPerformancePlusWizard.strings.error);
+                    alert(response.data.message || wpWPPerformancePlusWizard.strings.error);
                 }
             },
             error: function(xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert(wpPerformancePlusWizard.strings.error);
+                alert(wpWPPerformancePlusWizard.strings.error);
             }
         });
     });

@@ -1,11 +1,11 @@
 <?php
 /**
- * Class PerformancePlus_Compatibility
+ * Class WPPerformancePlus_Compatibility
  * 
  * Handles plugin compatibility checks and conflicts.
  * Detects existing performance plugins and server configurations.
  */
-class PerformancePlus_Compatibility {
+class WPPerformancePlus_Compatibility {
     /**
      * List of known performance plugins to check
      * @var array
@@ -68,7 +68,7 @@ class PerformancePlus_Compatibility {
         if ($this->has_existing_htaccess_rules()) {
             $configurations[] = [
                 'type' => 'htaccess',
-                'description' => __('Existing performance rules found in .htaccess', 'performanceplus')
+                'description' => __('Existing performance rules found in .htaccess', 'wp_performanceplus')
             ];
         }
 
@@ -76,7 +76,7 @@ class PerformancePlus_Compatibility {
         if (wp_using_ext_object_cache()) {
             $configurations[] = [
                 'type' => 'object_cache',
-                'description' => __('External object cache is already configured', 'performanceplus')
+                'description' => __('External object cache is already configured', 'wp_performanceplus')
             ];
         }
 
@@ -84,7 +84,7 @@ class PerformancePlus_Compatibility {
         if ($this->detect_cdn_configuration()) {
             $configurations[] = [
                 'type' => 'cdn',
-                'description' => __('Existing CDN configuration detected', 'performanceplus')
+                'description' => __('Existing CDN configuration detected', 'wp_performanceplus')
             ];
         }
 
@@ -104,12 +104,12 @@ class PerformancePlus_Compatibility {
 
         add_action('admin_notices', function() use ($active_plugins, $configurations) {
             ?>
-            <div class="notice notice-warning is-dismissible performanceplus-compatibility-notice">
-                <h3><?php esc_html_e('PerformancePlus - Compatibility Notice', 'performanceplus'); ?></h3>
+            <div class="notice notice-warning is-dismissible wp_performanceplus-compatibility-notice">
+                <h3><?php esc_html_e('WPPerformancePlus - Compatibility Notice', 'wp_performanceplus'); ?></h3>
                 
                 <?php if (!empty($active_plugins)): ?>
                     <p>
-                        <?php esc_html_e('The following performance plugins are currently active and may conflict with PerformancePlus:', 'performanceplus'); ?>
+                        <?php esc_html_e('The following performance plugins are currently active and may conflict with WPPerformancePlus:', 'wp_performanceplus'); ?>
                     </p>
                     <ul>
                         <?php foreach ($active_plugins as $plugin_name): ?>
@@ -120,7 +120,7 @@ class PerformancePlus_Compatibility {
 
                 <?php if (!empty($configurations)): ?>
                     <p>
-                        <?php esc_html_e('The following configurations were detected:', 'performanceplus'); ?>
+                        <?php esc_html_e('The following configurations were detected:', 'wp_performanceplus'); ?>
                     </p>
                     <ul>
                         <?php foreach ($configurations as $config): ?>
@@ -131,10 +131,10 @@ class PerformancePlus_Compatibility {
 
                 <p>
                     <button type="button" class="button button-primary deactivate-competing-plugins">
-                        <?php esc_html_e('Deactivate Competing Plugins', 'performanceplus'); ?>
+                        <?php esc_html_e('Deactivate Competing Plugins', 'wp_performanceplus'); ?>
                     </button>
                     <button type="button" class="button button-secondary dismiss-notice">
-                        <?php esc_html_e('I understand, keep both', 'performanceplus'); ?>
+                        <?php esc_html_e('I understand, keep both', 'wp_performanceplus'); ?>
                     </button>
                 </p>
             </div>
@@ -146,8 +146,8 @@ class PerformancePlus_Compatibility {
                         url: ajaxurl,
                         type: 'POST',
                         data: {
-                            action: 'performanceplus_deactivate_plugins',
-                            nonce: '<?php echo wp_create_nonce('performanceplus_deactivate_plugins'); ?>'
+                            action: 'wp_performanceplus_deactivate_plugins',
+                            nonce: '<?php echo wp_create_nonce('wp_performanceplus_deactivate_plugins'); ?>'
                         },
                         success: function(response) {
                             if (response.success) {
@@ -227,10 +227,10 @@ class PerformancePlus_Compatibility {
      * AJAX handler for deactivating competing plugins
      */
     public function handle_plugin_deactivation() {
-        check_ajax_referer('performanceplus_deactivate_plugins', 'nonce');
+        check_ajax_referer('wp_performanceplus_deactivate_plugins', 'nonce');
 
         if (!current_user_can('activate_plugins')) {
-            wp_send_json_error(['message' => __('You do not have permission to deactivate plugins.', 'performanceplus')]);
+            wp_send_json_error(['message' => __('You do not have permission to deactivate plugins.', 'wp_performanceplus')]);
         }
 
         $active_plugins = $this->get_active_competing_plugins();
@@ -240,7 +240,7 @@ class PerformancePlus_Compatibility {
         }
 
         wp_send_json_success([
-            'message' => __('Competing plugins have been deactivated.', 'performanceplus'),
+            'message' => __('Competing plugins have been deactivated.', 'wp_performanceplus'),
             'deactivated' => array_values($active_plugins)
         ]);
     }
@@ -257,33 +257,33 @@ class PerformancePlus_Compatibility {
                 'value' => PHP_VERSION,
                 'recommended' => '7.4',
                 'status' => version_compare(PHP_VERSION, '7.4', '>='),
-                'label' => __('PHP Version', 'performanceplus'),
-                'description' => sprintf(__('Running PHP %s. Recommended: 7.4 or higher.', 'performanceplus'), PHP_VERSION)
+                'label' => __('PHP Version', 'wp_performanceplus'),
+                'description' => sprintf(__('Running PHP %s. Recommended: 7.4 or higher.', 'wp_performanceplus'), PHP_VERSION)
             ],
             'memory_limit' => [
                 'value' => ini_get('memory_limit'),
                 'recommended' => '256M',
                 'status' => $this->get_memory_limit() >= 256,
-                'label' => __('Memory Limit', 'performanceplus'),
-                'description' => sprintf(__('Current: %s. Recommended: 256M or higher.', 'performanceplus'), ini_get('memory_limit'))
+                'label' => __('Memory Limit', 'wp_performanceplus'),
+                'description' => sprintf(__('Current: %s. Recommended: 256M or higher.', 'wp_performanceplus'), ini_get('memory_limit'))
             ],
             'post_max_size' => [
                 'value' => ini_get('post_max_size'),
                 'recommended' => '64M',
                 'status' => $this->convert_to_bytes(ini_get('post_max_size')) >= $this->convert_to_bytes('64M'),
-                'label' => __('Post Max Size', 'performanceplus')
+                'label' => __('Post Max Size', 'wp_performanceplus')
             ],
             'max_execution_time' => [
                 'value' => ini_get('max_execution_time'),
                 'recommended' => 300,
                 'status' => ini_get('max_execution_time') >= 300,
-                'label' => __('Max Execution Time', 'performanceplus')
+                'label' => __('Max Execution Time', 'wp_performanceplus')
             ],
             'opcache' => [
                 'value' => function_exists('opcache_get_status') ? 'Enabled' : 'Disabled',
                 'recommended' => 'Enabled',
                 'status' => function_exists('opcache_get_status'),
-                'label' => __('OPcache', 'performanceplus')
+                'label' => __('OPcache', 'wp_performanceplus')
             ]
         ];
 
@@ -294,19 +294,19 @@ class PerformancePlus_Compatibility {
                 'value' => $wpdb->get_var('SELECT VERSION()'),
                 'recommended' => '5.7',
                 'status' => version_compare($wpdb->get_var('SELECT VERSION()'), '5.7', '>='),
-                'label' => __('MySQL Version', 'performanceplus')
+                'label' => __('MySQL Version', 'wp_performanceplus')
             ],
             'max_connections' => [
                 'value' => $wpdb->get_var('SELECT @@max_connections'),
                 'recommended' => 150,
                 'status' => $wpdb->get_var('SELECT @@max_connections') >= 150,
-                'label' => __('Max Connections', 'performanceplus')
+                'label' => __('Max Connections', 'wp_performanceplus')
             ],
             'query_cache' => [
                 'value' => $wpdb->get_var('SELECT @@query_cache_size'),
                 'recommended' => '64M',
                 'status' => $this->convert_to_bytes($wpdb->get_var('SELECT @@query_cache_size')) >= $this->convert_to_bytes('64M'),
-                'label' => __('Query Cache Size', 'performanceplus')
+                'label' => __('Query Cache Size', 'wp_performanceplus')
             ]
         ];
 
@@ -315,7 +315,7 @@ class PerformancePlus_Compatibility {
         $web_server = [
             'software' => [
                 'value' => $server_software,
-                'label' => __('Web Server', 'performanceplus')
+                'label' => __('Web Server', 'wp_performanceplus')
             ]
         ];
 
@@ -350,13 +350,13 @@ class PerformancePlus_Compatibility {
                 'value' => is_ssl() ? 'Yes' : 'No',
                 'recommended' => 'Yes',
                 'status' => is_ssl(),
-                'label' => __('SSL Enabled', 'performanceplus')
+                'label' => __('SSL Enabled', 'wp_performanceplus')
             ],
             'hsts' => [
                 'value' => $this->check_hsts_enabled() ? 'Yes' : 'No',
                 'recommended' => 'Yes',
                 'status' => $this->check_hsts_enabled(),
-                'label' => __('HSTS Enabled', 'performanceplus')
+                'label' => __('HSTS Enabled', 'wp_performanceplus')
             ]
         ];
 
@@ -366,13 +366,13 @@ class PerformancePlus_Compatibility {
                 'value' => wp_using_ext_object_cache() ? 'Yes' : 'No',
                 'recommended' => 'Yes',
                 'status' => wp_using_ext_object_cache(),
-                'label' => __('External Object Cache', 'performanceplus')
+                'label' => __('External Object Cache', 'wp_performanceplus')
             ],
             'persistent' => [
                 'value' => $this->check_persistent_object_cache() ? 'Yes' : 'No',
                 'recommended' => 'Yes',
                 'status' => $this->check_persistent_object_cache(),
-                'label' => __('Persistent Object Cache', 'performanceplus')
+                'label' => __('Persistent Object Cache', 'wp_performanceplus')
             ]
         ];
 
@@ -398,26 +398,26 @@ class PerformancePlus_Compatibility {
                 'value' => $this->detect_nginx_fastcgi_cache(),
                 'recommended' => 'Enabled',
                 'status' => $this->detect_nginx_fastcgi_cache(),
-                'label' => __('FastCGI Cache', 'performanceplus'),
-                'description' => __('NGINX FastCGI Cache provides fast caching for PHP applications.', 'performanceplus')
+                'label' => __('FastCGI Cache', 'wp_performanceplus'),
+                'description' => __('NGINX FastCGI Cache provides fast caching for PHP applications.', 'wp_performanceplus')
             ],
             'gzip' => [
                 'value' => $this->detect_nginx_gzip(),
                 'recommended' => 'Enabled',
                 'status' => $this->detect_nginx_gzip(),
-                'label' => __('GZIP Compression', 'performanceplus')
+                'label' => __('GZIP Compression', 'wp_performanceplus')
             ],
             'http2' => [
                 'value' => $this->detect_http2(),
                 'recommended' => 'Enabled',
                 'status' => $this->detect_http2(),
-                'label' => __('HTTP/2', 'performanceplus')
+                'label' => __('HTTP/2', 'wp_performanceplus')
             ],
             'microcache' => [
                 'value' => $this->detect_nginx_microcache(),
                 'recommended' => 'Enabled',
                 'status' => $this->detect_nginx_microcache(),
-                'label' => __('Microcaching', 'performanceplus')
+                'label' => __('Microcaching', 'wp_performanceplus')
             ]
         ];
 
@@ -472,7 +472,7 @@ class PerformancePlus_Compatibility {
             $recommendations[] = [
                 'priority' => 'high',
                 'message' => sprintf(
-                    __('Upgrade PHP to version %s or higher for better performance and security.', 'performanceplus'),
+                    __('Upgrade PHP to version %s or higher for better performance and security.', 'wp_performanceplus'),
                     $configs['php']['version']['recommended']
                 ),
                 'action' => 'contact_host'
@@ -490,14 +490,14 @@ class PerformancePlus_Compatibility {
         $configs = $this->check_server_configurations();
         $score = $this->calculate_performance_score($configs);
         ?>
-        <div class="wrap performanceplus-compatibility-report">
-            <h1><?php esc_html_e('System Compatibility Report', 'performanceplus'); ?></h1>
+        <div class="wrap wp_performanceplus-compatibility-report">
+            <h1><?php esc_html_e('System Compatibility Report', 'wp_performanceplus'); ?></h1>
 
             <!-- Overall Score Section -->
             <div class="performance-score-wrapper">
                 <div class="performance-score <?php echo esc_attr($this->get_score_class($score)); ?>">
                     <div class="score-number"><?php echo esc_html($score); ?></div>
-                    <div class="score-label"><?php esc_html_e('Performance Score', 'performanceplus'); ?></div>
+                    <div class="score-label"><?php esc_html_e('Performance Score', 'wp_performanceplus'); ?></div>
                 </div>
                 <div class="score-summary">
                     <?php echo esc_html($this->get_score_summary($score)); ?>
@@ -517,10 +517,10 @@ class PerformancePlus_Compatibility {
                     <table class="widefat config-checks">
                         <thead>
                             <tr>
-                                <th><?php esc_html_e('Check', 'performanceplus'); ?></th>
-                                <th><?php esc_html_e('Current', 'performanceplus'); ?></th>
-                                <th><?php esc_html_e('Recommended', 'performanceplus'); ?></th>
-                                <th><?php esc_html_e('Status', 'performanceplus'); ?></th>
+                                <th><?php esc_html_e('Check', 'wp_performanceplus'); ?></th>
+                                <th><?php esc_html_e('Current', 'wp_performanceplus'); ?></th>
+                                <th><?php esc_html_e('Recommended', 'wp_performanceplus'); ?></th>
+                                <th><?php esc_html_e('Status', 'wp_performanceplus'); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -548,7 +548,7 @@ class PerformancePlus_Compatibility {
 
                     <?php if ($recommendations = $this->get_section_recommendations($section, $checks)): ?>
                         <div class="section-recommendations">
-                            <h3><?php esc_html_e('Recommendations', 'performanceplus'); ?></h3>
+                            <h3><?php esc_html_e('Recommendations', 'wp_performanceplus'); ?></h3>
                             <ul class="recommendations-list">
                                 <?php foreach ($recommendations as $rec): ?>
                                     <li class="recommendation-item priority-<?php echo esc_attr($rec['priority']); ?>">
@@ -558,7 +558,7 @@ class PerformancePlus_Compatibility {
                                             <?php if (!empty($rec['action'])): ?>
                                                 <button class="button button-secondary recommendation-action" 
                                                         data-action="<?php echo esc_attr($rec['action']); ?>"
-                                                        data-nonce="<?php echo wp_create_nonce('performanceplus_action'); ?>">
+                                                        data-nonce="<?php echo wp_create_nonce('wp_performanceplus_action'); ?>">
                                                     <?php echo esc_html($this->get_action_label($rec['action'])); ?>
                                                 </button>
                                             <?php endif; ?>
@@ -574,18 +574,18 @@ class PerformancePlus_Compatibility {
             <!-- Action Buttons -->
             <div class="compatibility-actions">
                 <button type="button" class="button button-primary" id="optimize-all">
-                    <?php esc_html_e('Optimize All', 'performanceplus'); ?>
+                    <?php esc_html_e('Optimize All', 'wp_performanceplus'); ?>
                 </button>
                 <button type="button" class="button button-secondary" id="export-report">
-                    <?php esc_html_e('Export Report', 'performanceplus'); ?>
+                    <?php esc_html_e('Export Report', 'wp_performanceplus'); ?>
                 </button>
             </div>
         </div>
 
         <!-- Progress Modal -->
-        <div id="optimization-progress" class="performanceplus-modal" style="display:none;">
+        <div id="optimization-progress" class="wp_performanceplus-modal" style="display:none;">
             <div class="modal-content">
-                <h2><?php esc_html_e('Optimizing Your Site', 'performanceplus'); ?></h2>
+                <h2><?php esc_html_e('Optimizing Your Site', 'wp_performanceplus'); ?></h2>
                 <div class="progress-bar">
                     <div class="progress"></div>
                 </div>
@@ -650,12 +650,12 @@ class PerformancePlus_Compatibility {
                 'section' => 'php',
                 'priority' => 'high',
                 'message' => sprintf(
-                    __('PHP version %s detected. Upgrade to version %s or higher for better performance and security.', 'performanceplus'),
+                    __('PHP version %s detected. Upgrade to version %s or higher for better performance and security.', 'wp_performanceplus'),
                     PHP_VERSION,
                     $configs['php']['version']['recommended']
                 ),
                 'action' => 'contact_host',
-                'action_label' => __('Contact Host', 'performanceplus'),
+                'action_label' => __('Contact Host', 'wp_performanceplus'),
                 'impact' => 'critical'
             ];
         }
@@ -664,9 +664,9 @@ class PerformancePlus_Compatibility {
             $recommendations[] = [
                 'section' => 'php',
                 'priority' => 'medium',
-                'message' => __('Enable PHP OPcache to improve PHP performance.', 'performanceplus'),
+                'message' => __('Enable PHP OPcache to improve PHP performance.', 'wp_performanceplus'),
                 'action' => 'enable_opcache',
-                'action_label' => __('Enable OPcache', 'performanceplus'),
+                'action_label' => __('Enable OPcache', 'wp_performanceplus'),
                 'impact' => 'significant'
             ];
         }
@@ -676,9 +676,9 @@ class PerformancePlus_Compatibility {
             $recommendations[] = [
                 'section' => 'mysql',
                 'priority' => 'medium',
-                'message' => __('Increase MySQL query cache size for better database performance.', 'performanceplus'),
+                'message' => __('Increase MySQL query cache size for better database performance.', 'wp_performanceplus'),
                 'action' => 'optimize_mysql',
-                'action_label' => __('Optimize MySQL', 'performanceplus'),
+                'action_label' => __('Optimize MySQL', 'wp_performanceplus'),
                 'impact' => 'moderate'
             ];
         }
@@ -690,9 +690,9 @@ class PerformancePlus_Compatibility {
                 $recommendations[] = [
                     'section' => 'web_server',
                     'priority' => 'high',
-                    'message' => __('Enable Apache mod_expires for better browser caching.', 'performanceplus'),
+                    'message' => __('Enable Apache mod_expires for better browser caching.', 'wp_performanceplus'),
                     'action' => 'enable_expires',
-                    'action_label' => __('Enable mod_expires', 'performanceplus'),
+                    'action_label' => __('Enable mod_expires', 'wp_performanceplus'),
                     'impact' => 'significant'
                 ];
             }
@@ -703,9 +703,9 @@ class PerformancePlus_Compatibility {
             $recommendations[] = [
                 'section' => 'ssl',
                 'priority' => 'high',
-                'message' => __('Enable SSL/HTTPS for better security and performance.', 'performanceplus'),
+                'message' => __('Enable SSL/HTTPS for better security and performance.', 'wp_performanceplus'),
                 'action' => 'enable_ssl',
-                'action_label' => __('Enable SSL', 'performanceplus'),
+                'action_label' => __('Enable SSL', 'wp_performanceplus'),
                 'impact' => 'critical'
             ];
         }
@@ -715,9 +715,9 @@ class PerformancePlus_Compatibility {
             $recommendations[] = [
                 'section' => 'object_cache',
                 'priority' => 'medium',
-                'message' => __('Enable object caching to improve dynamic page load times.', 'performanceplus'),
+                'message' => __('Enable object caching to improve dynamic page load times.', 'wp_performanceplus'),
                 'action' => 'setup_object_cache',
-                'action_label' => __('Setup Object Cache', 'performanceplus'),
+                'action_label' => __('Setup Object Cache', 'wp_performanceplus'),
                 'impact' => 'significant'
             ];
         }
@@ -728,9 +728,9 @@ class PerformancePlus_Compatibility {
                 $recommendations[] = [
                     'section' => 'nginx',
                     'priority' => 'medium',
-                    'message' => __('Enable NGINX FastCGI Cache for better PHP performance.', 'performanceplus'),
+                    'message' => __('Enable NGINX FastCGI Cache for better PHP performance.', 'wp_performanceplus'),
                     'action' => 'enable_fastcgi_cache',
-                    'action_label' => __('Enable FastCGI Cache', 'performanceplus'),
+                    'action_label' => __('Enable FastCGI Cache', 'wp_performanceplus'),
                     'impact' => 'significant'
                 ];
             }

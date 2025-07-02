@@ -6,12 +6,12 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 // Delete all plugin options
 $option_names = [
-    'performanceplus_settings',
-    'performanceplus_cloudflare_settings',
-    'performanceplus_keycdn_settings',
-    'performanceplus_bunnycdn_settings',
-    'performanceplus_cloudfront_settings',
-    'performanceplus_local_settings'
+    'wp_performanceplus_settings',
+    'wp_performanceplus_cloudflare_settings',
+    'wp_performanceplus_keycdn_settings',
+    'wp_performanceplus_bunnycdn_settings',
+    'wp_performanceplus_cloudfront_settings',
+    'wp_performanceplus_local_settings'
 ];
 
 foreach ($option_names as $option) {
@@ -19,4 +19,4 @@ foreach ($option_names as $option) {
 }
 
 // Clear scheduled events
-wp_clear_scheduled_hook('performanceplus_database_cleanup'); 
+wp_clear_scheduled_hook('wp_performanceplus_database_cleanup'); 

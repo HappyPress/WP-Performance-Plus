@@ -1,4 +1,4 @@
-=== PerformancePlus ===
+=== WPPerformancePlus ===
 Contributors: patilswapnilv
 Tags: cdn, optimization, cache
 Requires at least: 5.0

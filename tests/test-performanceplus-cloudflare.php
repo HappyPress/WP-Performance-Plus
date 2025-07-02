@@ -1,9 +1,9 @@
-class Test_PerformancePlus_Cloudflare extends WP_UnitTestCase {
+class Test_WPPerformancePlus_Cloudflare extends WP_UnitTestCase {
     private $cloudflare;
     
     public function setUp(): void {
         parent::setUp();
-        $this->cloudflare = new PerformancePlus_Cloudflare();
+        $this->cloudflare = new WPPerformancePlus_Cloudflare();
     }
     
     public function test_validate_api_credentials() {
@@ -12,7 +12,7 @@ class Test_PerformancePlus_Cloudflare extends WP_UnitTestCase {
         $this->assertTrue($result);
         
         // Test with invalid credentials
-        update_option('performanceplus_cloudflare_api_token', 'invalid_token');
+        update_option('wp_performanceplus_cloudflare_api_token', 'invalid_token');
         $result = $this->cloudflare->validate_api_credentials();
         $this->assertInstanceOf(WP_Error::class, $result);
     }

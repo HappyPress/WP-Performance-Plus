@@ -5,11 +5,11 @@ if (!defined('WPINC')) {
 
 // Initialize variables
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'general';
-$onboarding_completed = get_option('performanceplus_onboarding_completed', false);
-$current_step = get_option('performanceplus_onboarding_step', 1);
+$onboarding_completed = get_option('wp_performanceplus_onboarding_completed', false);
+$current_step = get_option('wp_performanceplus_onboarding_step', 1);
 ?>
 
-<div class="wrap performanceplus-dashboard">
+<div class="wrap wp_performanceplus-dashboard">
     <?php if (!$onboarding_completed): ?>
     <div class="onboarding-wizard">
         <div class="wizard-header">
@@ -213,10 +213,10 @@ $current_step = get_option('performanceplus_onboarding_step', 1);
             </div>
             <div class="card-content">
                 <?php
-                $performance_score = get_option('performanceplus_performance_score', 0);
-                $total_optimized = get_option('performanceplus_total_optimized', 0);
-                $bytes_saved = get_option('performanceplus_bytes_saved', 0);
-                $load_time_improvement = get_option('performanceplus_load_time_improvement', 0);
+                $performance_score = get_option('wp_performanceplus_performance_score', 0);
+                $total_optimized = get_option('wp_performanceplus_total_optimized', 0);
+                $bytes_saved = get_option('wp_performanceplus_bytes_saved', 0);
+                $load_time_improvement = get_option('wp_performanceplus_load_time_improvement', 0);
                 ?>
                 <div class="performance-score-wrapper">
                     <div class="circular-progress" data-score="<?php echo esc_attr($performance_score); ?>">

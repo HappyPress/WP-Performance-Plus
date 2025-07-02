@@ -1,5 +1,5 @@
 <?php
-abstract class PerformancePlus_CDN {
+abstract class WPPerformancePlus_CDN {
     abstract public function validate_api_credentials();
     abstract public function purge_cache();
     abstract protected function get_api_url();

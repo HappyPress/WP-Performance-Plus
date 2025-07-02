@@ -1,6 +1,6 @@
-class PerformancePlus_Rate_Limiter {
+class WPPerformancePlus_Rate_Limiter {
     public function check_limit($action, $limit = 60) {
-        $transient_key = "performanceplus_rate_limit_{$action}";
+        $transient_key = "wp_performanceplus_rate_limit_{$action}";
         $count = get_transient($transient_key) ?: 0;
         
         if ($count >= $limit) {

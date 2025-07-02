@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PerformancePlus 1.0\\n"
+"Project-Id-Version: WPPerformancePlus 1.0\\n"
 "Report-Msgid-Bugs-To: \\n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\\n"
 "PO-Revision-Date: 2024-01-01 00:00+0000\\n"
@@ -11,11 +11,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\\n"
 "Content-Transfer-Encoding: 8bit\\n"
 
-msgid "Welcome to PerformancePlus!"
-msgstr "Welcome to PerformancePlus!"
+msgid "Welcome to WPPerformancePlus!"
+msgstr "Welcome to WPPerformancePlus!"
 
-msgid "Thank you for choosing PerformancePlus to optimize your WordPress site."
-msgstr "Thank you for choosing PerformancePlus to optimize your WordPress site."
+msgid "Thank you for choosing WPPerformancePlus to optimize your WordPress site."
+msgstr "Thank you for choosing WPPerformancePlus to optimize your WordPress site."
 
 msgid "Get Started"
 msgstr "Get Started"

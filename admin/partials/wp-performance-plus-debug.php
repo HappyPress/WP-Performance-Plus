@@ -1,27 +1,27 @@
 <?php if (!defined('ABSPATH')) exit; ?>
 
-<div class="wrap performanceplus-wrap">
-    <h1><?php _e('Performance Plus Debug', 'performanceplus'); ?></h1>
+<div class="wrap wp_performanceplus-wrap">
+    <h1><?php _e('Performance Plus Debug', 'wp_performanceplus'); ?></h1>
 
     <div class="notice notice-info">
         <p>
-            <?php _e('Debug mode is currently:', 'performanceplus'); ?>
+            <?php _e('Debug mode is currently:', 'wp_performanceplus'); ?>
             <strong id="debug-status">
-                <?php echo get_option('performanceplus_debug_mode') ? 
-                    __('Enabled', 'performanceplus') : 
-                    __('Disabled', 'performanceplus'); ?>
+                <?php echo get_option('wp_performanceplus_debug_mode') ? 
+                    __('Enabled', 'wp_performanceplus') : 
+                    __('Disabled', 'wp_performanceplus'); ?>
             </strong>
             <button type="button" class="button" id="toggle-debug">
-                <?php _e('Toggle Debug Mode', 'performanceplus'); ?>
+                <?php _e('Toggle Debug Mode', 'wp_performanceplus'); ?>
             </button>
         </p>
     </div>
 
     <div class="pp-card">
         <div class="pp-card-header">
-            <h2><?php _e('Performance Metrics', 'performanceplus'); ?></h2>
+            <h2><?php _e('Performance Metrics', 'wp_performanceplus'); ?></h2>
             <button type="button" class="button" id="refresh-metrics">
-                <?php _e('Refresh', 'performanceplus'); ?>
+                <?php _e('Refresh', 'wp_performanceplus'); ?>
             </button>
         </div>
         <div class="pp-card-body">
@@ -31,33 +31,33 @@
                 if (!empty($metrics)): ?>
                     <div class="metrics-grid">
                         <div class="metric-box">
-                            <h3><?php _e('Memory Usage', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Memory Usage', 'wp_performanceplus'); ?></h3>
                             <p>Current: <?php echo size_format($metrics['memory']['start']); ?></p>
                             <p>Peak: <?php echo size_format($metrics['memory']['peak']); ?></p>
                         </div>
                         <div class="metric-box">
-                            <h3><?php _e('Load Time', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Load Time', 'wp_performanceplus'); ?></h3>
                             <p><?php echo number_format($metrics['load_time'], 4); ?> seconds</p>
                         </div>
                         <div class="metric-box">
-                            <h3><?php _e('Database Queries', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Database Queries', 'wp_performanceplus'); ?></h3>
                             <p>Total: <?php echo $metrics['queries']['count']; ?></p>
                             <p>Slow Queries: <?php echo count($metrics['queries']['slow_queries']); ?></p>
                         </div>
                         <div class="metric-box">
-                            <h3><?php _e('Errors', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Errors', 'wp_performanceplus'); ?></h3>
                             <p>Total: <?php echo $metrics['errors']['count']; ?></p>
                         </div>
                     </div>
 
                     <?php if (!empty($metrics['queries']['slow_queries'])): ?>
                         <div class="slow-queries">
-                            <h3><?php _e('Slow Queries', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Slow Queries', 'wp_performanceplus'); ?></h3>
                             <table class="widefat">
                                 <thead>
                                     <tr>
-                                        <th><?php _e('Query', 'performanceplus'); ?></th>
-                                        <th><?php _e('Time', 'performanceplus'); ?></th>
+                                        <th><?php _e('Query', 'wp_performanceplus'); ?></th>
+                                        <th><?php _e('Time', 'wp_performanceplus'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -74,12 +74,12 @@
 
                     <?php if (!empty($metrics['errors']['types'])): ?>
                         <div class="error-summary">
-                            <h3><?php _e('Error Summary', 'performanceplus'); ?></h3>
+                            <h3><?php _e('Error Summary', 'wp_performanceplus'); ?></h3>
                             <table class="widefat">
                                 <thead>
                                     <tr>
-                                        <th><?php _e('Error Type', 'performanceplus'); ?></th>
-                                        <th><?php _e('Count', 'performanceplus'); ?></th>
+                                        <th><?php _e('Error Type', 'wp_performanceplus'); ?></th>
+                                        <th><?php _e('Count', 'wp_performanceplus'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,7 +94,7 @@
                         </div>
                     <?php endif; ?>
                 <?php else: ?>
-                    <p><?php _e('No metrics available. Enable debug mode to collect metrics.', 'performanceplus'); ?></p>
+                    <p><?php _e('No metrics available. Enable debug mode to collect metrics.', 'wp_performanceplus'); ?></p>
                 <?php endif; ?>
             </div>
         </div>
@@ -102,13 +102,13 @@
 
     <div class="pp-card">
         <div class="pp-card-header">
-            <h2><?php _e('Debug Log', 'performanceplus'); ?></h2>
+            <h2><?php _e('Debug Log', 'wp_performanceplus'); ?></h2>
             <div class="pp-card-actions">
                 <button type="button" class="button" id="refresh-log">
-                    <?php _e('Refresh', 'performanceplus'); ?>
+                    <?php _e('Refresh', 'wp_performanceplus'); ?>
                 </button>
                 <button type="button" class="button" id="clear-log">
-                    <?php _e('Clear Log', 'performanceplus'); ?>
+                    <?php _e('Clear Log', 'wp_performanceplus'); ?>
                 </button>
             </div>
         </div>
@@ -181,8 +181,8 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'performanceplus_toggle_debug',
-                _ajax_nonce: '<?php echo wp_create_nonce('performanceplus_debug'); ?>',
+                action: 'wp_performanceplus_toggle_debug',
+                _ajax_nonce: '<?php echo wp_create_nonce('wp_performanceplus_debug'); ?>',
                 enabled: $('#debug-status').text().trim() === 'Disabled'
             },
             success: function(response) {
@@ -199,8 +199,8 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'performanceplus_get_metrics',
-                _ajax_nonce: '<?php echo wp_create_nonce('performanceplus_debug'); ?>'
+                action: 'wp_performanceplus_get_metrics',
+                _ajax_nonce: '<?php echo wp_create_nonce('wp_performanceplus_debug'); ?>'
             },
             success: function(response) {
                 if (response.success) {
@@ -212,7 +212,7 @@ jQuery(document).ready(function($) {
 
     // Clear log
     $('#clear-log').on('click', function() {
-        if (!confirm('<?php _e('Are you sure you want to clear the debug log?', 'performanceplus'); ?>')) {
+        if (!confirm('<?php _e('Are you sure you want to clear the debug log?', 'wp_performanceplus'); ?>')) {
             return;
         }
         
@@ -220,8 +220,8 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'performanceplus_clear_log',
-                _ajax_nonce: '<?php echo wp_create_nonce('performanceplus_debug'); ?>'
+                action: 'wp_performanceplus_clear_log',
+                _ajax_nonce: '<?php echo wp_create_nonce('wp_performanceplus_debug'); ?>'
             },
             success: function(response) {
                 if (response.success) {
@@ -237,8 +237,8 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'performanceplus_get_log',
-                _ajax_nonce: '<?php echo wp_create_nonce('performanceplus_debug'); ?>'
+                action: 'wp_performanceplus_get_log',
+                _ajax_nonce: '<?php echo wp_create_nonce('wp_performanceplus_debug'); ?>'
             },
             success: function(response) {
                 if (response.success) {

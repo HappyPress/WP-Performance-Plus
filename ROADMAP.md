@@ -1,4 +1,4 @@
-# WordPress Plugin - PerformancePlus
+# WordPress Plugin - WPPerformancePlus
 ## A Comprehensive CDN and Local Optimization Toolkit
 
 ## Table of Contents
