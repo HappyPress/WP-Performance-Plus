@@ -388,7 +388,7 @@ class WP_Performance_Plus_Performance_Monitor {
         
         return array(
             'timeline' => $results,
-            'summary' => $this->get_performance_summary($period),
+            'summary' => array(), // Temporary empty array to prevent fatal error
             'recommendations' => $this->get_optimization_recommendations()
         );
     }
@@ -430,8 +430,8 @@ class WP_Performance_Plus_Performance_Monitor {
         return array(
             'comparison' => $cdn_vs_no_cdn,
             'cache_performance' => $cache_performance,
-            'geographic_performance' => $this->get_geographic_performance($period),
-            'savings' => $this->calculate_cdn_savings($period)
+            'geographic_performance' => array(), // Temporary empty array
+            'savings' => array() // Temporary empty array
         );
     }
     
@@ -462,11 +462,11 @@ class WP_Performance_Plus_Performance_Monitor {
             'load_time' => $load_time,
             'response_code' => $response_code,
             'response_size' => $response_size,
-            'ttfb' => $this->calculate_ttfb($headers),
-            'compression' => $this->check_compression($headers),
-            'caching' => $this->check_caching($headers),
-            'cdn_detected' => $this->detect_cdn_usage($headers),
-            'score' => $this->calculate_speed_score($load_time, $response_size),
+            'ttfb' => 0, // Temporary placeholder
+            'compression' => false, // Temporary placeholder
+            'caching' => false, // Temporary placeholder  
+            'cdn_detected' => false, // Temporary placeholder
+            'score' => 50, // Temporary placeholder
             'timestamp' => current_time('mysql')
         );
     }
@@ -526,10 +526,12 @@ class WP_Performance_Plus_Performance_Monitor {
         }
         
         // Check database optimization
-        $this->check_database_recommendations($recommendations);
+        // TODO: Implement missing method
+        // $this->check_database_recommendations($recommendations);
         
         // Check Core Web Vitals
-        $this->check_core_web_vitals_recommendations($recommendations);
+        // TODO: Implement missing method
+        // $this->check_core_web_vitals_recommendations($recommendations);
         
         return $recommendations;
     }
@@ -539,15 +541,19 @@ class WP_Performance_Plus_Performance_Monitor {
      */
     public function generate_daily_report() {
         $metrics = $this->get_performance_metrics('24hours');
-        $report = $this->format_performance_report($metrics, 'daily');
+        // TODO: Implement missing methods for reporting
+        // $report = $this->format_performance_report($metrics, 'daily');
+        $report = array('metrics' => $metrics, 'type' => 'daily'); // Temporary placeholder
         
         // Send email if configured
         if (isset($this->settings['email_reports']) && $this->settings['email_reports']) {
-            $this->send_performance_email($report, 'daily');
+            // TODO: Implement missing method
+            // $this->send_performance_email($report, 'daily');
         }
         
         // Save report
-        $this->save_performance_report($report, 'daily');
+        // TODO: Implement missing method
+        // $this->save_performance_report($report, 'daily');
     }
     
     /**
@@ -555,15 +561,19 @@ class WP_Performance_Plus_Performance_Monitor {
      */
     public function generate_weekly_report() {
         $metrics = $this->get_performance_metrics('7days');
-        $report = $this->format_performance_report($metrics, 'weekly');
+        // TODO: Implement missing methods for reporting
+        // $report = $this->format_performance_report($metrics, 'weekly');
+        $report = array('metrics' => $metrics, 'type' => 'weekly'); // Temporary placeholder
         
         // Send email if configured
         if (isset($this->settings['email_reports']) && $this->settings['email_reports']) {
-            $this->send_performance_email($report, 'weekly');
+            // TODO: Implement missing method
+            // $this->send_performance_email($report, 'weekly');
         }
         
         // Save report
-        $this->save_performance_report($report, 'weekly');
+        // TODO: Implement missing method
+        // $this->save_performance_report($report, 'weekly');
     }
     
     /**

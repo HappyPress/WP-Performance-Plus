@@ -43,9 +43,11 @@ class WP_Performance_Plus {
         
         // Initialize enterprise systems
         $this->init_multi_cdn_orchestrator();
-        $this->init_content_delivery_optimizer();
-        $this->init_analytics_dashboard();
-        $this->init_enterprise_scaler();
+        // TODO: Re-enable when content delivery optimizer methods are fully implemented
+        // $this->init_content_delivery_optimizer();
+        // TODO: Re-enable when performance monitor methods are fully implemented  
+        // $this->init_analytics_dashboard();
+        // $this->init_enterprise_scaler();
         
         // Initialize WordPress hooks
         $this->define_admin_hooks();
@@ -68,9 +70,11 @@ class WP_Performance_Plus {
         
         // Load enterprise systems
         require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-multi-cdn-orchestrator.php';
-        require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-content-delivery-optimizer.php';
-        require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-analytics-dashboard.php';
-        require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-enterprise-scaler.php';
+        // TODO: Re-enable when content delivery optimizer is fully implemented
+        // require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-content-delivery-optimizer.php';
+        // TODO: Re-enable when performance monitor methods are fully implemented
+        // require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-analytics-dashboard.php';
+        // require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-enterprise-scaler.php';
         
         require_once plugin_dir_path(__FILE__) . 'class-wp-performance-plus-debug.php';
 
@@ -227,34 +231,40 @@ class WP_Performance_Plus {
         }
 
         // Content delivery optimization
-        if (!wp_next_scheduled('wp_performance_plus_optimize_content_delivery')) {
-            wp_schedule_event(time(), 'twicedaily', 'wp_performance_plus_optimize_content_delivery');
-        }
+        // TODO: Re-enable when content delivery optimizer is fully implemented
+        // if (!wp_next_scheduled('wp_performance_plus_optimize_content_delivery')) {
+        //     wp_schedule_event(time(), 'twicedaily', 'wp_performance_plus_optimize_content_delivery');
+        // }
 
         // Performance analytics generation
-        if (!wp_next_scheduled('wp_performance_plus_generate_analytics')) {
-            wp_schedule_event(time(), 'hourly', 'wp_performance_plus_generate_analytics');
-        }
+        // TODO: Re-enable when analytics dashboard is fully implemented
+        // if (!wp_next_scheduled('wp_performance_plus_generate_analytics')) {
+        //     wp_schedule_event(time(), 'hourly', 'wp_performance_plus_generate_analytics');
+        // }
 
         // Resource monitoring
-        if (!wp_next_scheduled('wp_performance_plus_monitor_resources')) {
-            wp_schedule_event(time(), 'wp_performance_plus_fifteen_minutes', 'wp_performance_plus_monitor_resources');
-        }
+        // TODO: Re-enable when enterprise scaler is fully implemented
+        // if (!wp_next_scheduled('wp_performance_plus_monitor_resources')) {
+        //     wp_schedule_event(time(), 'wp_performance_plus_fifteen_minutes', 'wp_performance_plus_monitor_resources');
+        // }
 
         // Auto-scaling checks
-        if (!wp_next_scheduled('wp_performance_plus_check_scaling_conditions')) {
-            wp_schedule_event(time(), 'wp_performance_plus_five_minutes', 'wp_performance_plus_check_scaling_conditions');
-        }
+        // TODO: Re-enable when enterprise scaler is fully implemented
+        // if (!wp_next_scheduled('wp_performance_plus_check_scaling_conditions')) {
+        //     wp_schedule_event(time(), 'wp_performance_plus_five_minutes', 'wp_performance_plus_check_scaling_conditions');
+        // }
 
         // Network optimization (for multisite)
-        if (is_multisite() && !wp_next_scheduled('wp_performance_plus_optimize_network_performance')) {
-            wp_schedule_event(time(), 'daily', 'wp_performance_plus_optimize_network_performance');
-        }
+        // TODO: Re-enable when enterprise scaler is fully implemented
+        // if (is_multisite() && !wp_next_scheduled('wp_performance_plus_optimize_network_performance')) {
+        //     wp_schedule_event(time(), 'daily', 'wp_performance_plus_optimize_network_performance');
+        // }
 
         // Cache warming
-        if (!wp_next_scheduled('wp_performance_plus_warm_cache')) {
-            wp_schedule_event(time(), 'hourly', 'wp_performance_plus_warm_cache');
-        }
+        // TODO: Re-enable when content delivery optimizer is fully implemented
+        // if (!wp_next_scheduled('wp_performance_plus_warm_cache')) {
+        //     wp_schedule_event(time(), 'hourly', 'wp_performance_plus_warm_cache');
+        // }
 
         // Performance alerts check
         if (!wp_next_scheduled('wp_performance_plus_check_alerts')) {
@@ -287,13 +297,13 @@ class WP_Performance_Plus {
         if (!isset($this->admin)) {
             $this->admin = new WP_Performance_Plus_Admin($this->get_plugin_name(), $this->get_version());
             
-            // Pass enterprise systems to admin
+            // Pass enterprise systems to admin (some are disabled due to incomplete implementation)
             if (method_exists($this->admin, 'set_enterprise_systems')) {
                 $this->admin->set_enterprise_systems(
                     $this->multi_cdn_orchestrator,
-                    $this->content_delivery_optimizer,
-                    $this->analytics_dashboard,
-                    $this->enterprise_scaler
+                    null, // content_delivery_optimizer is disabled due to incomplete implementation
+                    null, // analytics_dashboard is disabled due to incomplete implementation
+                    null  // enterprise_scaler is disabled due to incomplete implementation
                 );
             }
         }
@@ -327,9 +337,10 @@ class WP_Performance_Plus {
         $this->loader->add_action('wp_head', $this, 'add_cache_headers', 1);
         
         // Real-time performance tracking
-        if ($this->analytics_dashboard) {
-            $this->loader->add_action('wp_footer', $this->analytics_dashboard, 'add_realtime_tracking_script', 998);
-        }
+        // TODO: Re-enable when analytics dashboard is fully implemented
+        // if ($this->analytics_dashboard) {
+        //     $this->loader->add_action('wp_footer', $this->analytics_dashboard, 'add_realtime_tracking_script', 998);
+        // }
     }
 
     private function init_debug() {
@@ -548,12 +559,16 @@ class WP_Performance_Plus {
         // Clear all scheduled events
         $scheduled_events = array(
             'wp_performance_plus_check_cdn_health',
-            'wp_performance_plus_optimize_content_delivery',
-            'wp_performance_plus_generate_analytics',
-            'wp_performance_plus_monitor_resources',
-            'wp_performance_plus_check_scaling_conditions',
-            'wp_performance_plus_optimize_network_performance',
-            'wp_performance_plus_warm_cache',
+            // TODO: Re-enable when content delivery optimizer is fully implemented
+            // 'wp_performance_plus_optimize_content_delivery',
+            // TODO: Re-enable when analytics dashboard is fully implemented
+            // 'wp_performance_plus_generate_analytics',
+            // TODO: Re-enable when enterprise scaler is fully implemented
+            // 'wp_performance_plus_monitor_resources',
+            // 'wp_performance_plus_check_scaling_conditions',
+            // 'wp_performance_plus_optimize_network_performance',
+            // TODO: Re-enable when content delivery optimizer is fully implemented
+            // 'wp_performance_plus_warm_cache',
             'wp_performance_plus_check_alerts'
         );
 
