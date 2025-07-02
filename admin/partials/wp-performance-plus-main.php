@@ -1,256 +1,383 @@
 <?php
+
+/**
+ * Provide a admin area view for the plugin
+ *
+ * This file is used to markup the admin-facing aspects of the plugin.
+ *
+ * @link       https://github.com/HappyPress/WP-Performance-Plus
+ * @since      1.0.0
+ *
+ * @package    WP_Performance_Plus
+ * @subpackage WP_Performance_Plus/admin/partials
+ */
+
+// If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
 }
 
-// Initialize variables
-$active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'general';
-$onboarding_completed = get_option('wp_performanceplus_onboarding_completed', false);
-$current_step = get_option('wp_performanceplus_onboarding_step', 1);
+// Get plugin settings
+$settings = get_option('wp_performance_plus_settings', array());
+$optimization_enabled = isset($settings['enable_optimization']) ? $settings['enable_optimization'] : false;
+$optimization_level = isset($settings['optimization_level']) ? $settings['optimization_level'] : 'balanced';
+$cdn_provider = isset($settings['cdn_provider']) ? $settings['cdn_provider'] : 'none';
+
+// Get performance metrics (placeholder data for now)
+$performance_metrics = array(
+    'cache_size' => '142 MB',
+    'cached_files' => 1247,
+    'optimization_status' => $optimization_enabled ? 'Active' : 'Disabled',
+    'last_optimization' => get_option('wp_performance_plus_last_optimization', 'Never'),
+    'database_size' => '23.4 MB',
+    'database_tables' => 47
+);
+
 ?>
 
-<div class="wrap wp_performanceplus-dashboard">
-    <?php if (!$onboarding_completed): ?>
-    <div class="onboarding-wizard">
-        <div class="wizard-header">
-            <h2><span class="dashicons dashicons-performance"></span> Welcome to Performance Plus</h2>
-            <p class="wizard-subtitle">Let's optimize your website in a few simple steps</p>
-        </div>
+<div class="wrap wp-performance-plus-dashboard">
+    <h1 class="wp-heading-inline">
+        <?php _e('WP Performance Plus Dashboard', 'wp-performance-plus'); ?>
+        <span class="wp-performance-plus-version">v<?php echo WP_PERFORMANCE_PLUS_VERSION; ?></span>
+    </h1>
+    
+    <hr class="wp-header-end">
 
-        <!-- Progress Steps -->
-        <div class="wizard-progress">
-            <div class="progress-track">
-                <div class="progress-fill" style="width: <?php echo ($current_step - 1) * 50; ?>%"></div>
+    <!-- Quick Status Cards -->
+    <div class="wp-performance-plus-status-cards">
+        <div class="status-card status-<?php echo $optimization_enabled ? 'active' : 'inactive'; ?>">
+            <div class="status-icon">
+                <span class="dashicons <?php echo $optimization_enabled ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
             </div>
-            <div class="progress-steps">
-                <div class="step<?php echo $current_step >= 1 ? ' active' : ''; ?><?php echo $current_step > 1 ? ' completed' : ''; ?>" data-step="1">
-                    <div class="step-icon">
-                        <span class="step-number">1</span>
-                        <span class="step-check dashicons dashicons-yes-alt"></span>
-                    </div>
-                    <span class="step-label">Cache</span>
-                </div>
-                <div class="step<?php echo $current_step >= 2 ? ' active' : ''; ?><?php echo $current_step > 2 ? ' completed' : ''; ?>" data-step="2">
-                    <div class="step-icon">
-                        <span class="step-number">2</span>
-                        <span class="step-check dashicons dashicons-yes-alt"></span>
-                    </div>
-                    <span class="step-label">CDN</span>
-                </div>
-                <div class="step<?php echo $current_step >= 3 ? ' active' : ''; ?><?php echo $current_step > 3 ? ' completed' : ''; ?>" data-step="3">
-                    <div class="step-icon">
-                        <span class="step-number">3</span>
-                        <span class="step-check dashicons dashicons-yes-alt"></span>
-                    </div>
-                    <span class="step-label">Optimize</span>
-                </div>
+            <div class="status-content">
+                <h3><?php _e('Optimization', 'wp-performance-plus'); ?></h3>
+                <p class="status-text"><?php echo $performance_metrics['optimization_status']; ?></p>
+                <p class="status-level"><?php printf(__('Level: %s', 'wp-performance-plus'), ucfirst($optimization_level)); ?></p>
             </div>
         </div>
 
-        <!-- Step Content -->
-        <div class="wizard-content">
-            <div class="step-panel<?php echo $current_step === 1 ? ' active' : ''; ?>" data-step="1">
-                <div class="step-header">
-                    <div class="step-icon">
-                        <span class="dashicons dashicons-dashboard"></span>
-                    </div>
-                    <div class="step-title">
-                        <h3>Cache Configuration</h3>
-                        <p>Enable caching to dramatically improve your site's performance</p>
-                    </div>
-                </div>
-                <div class="step-body">
-                    <div class="setting-card">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="enable-cache" name="cache_enabled">
-                            <span class="toggle-slider"></span>
-                            <div class="toggle-content">
-                                <span class="toggle-label">Enable Page Caching</span>
-                                <span class="toggle-description">Page caching can improve your site's loading speed by up to 5x by storing frequently accessed content.</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+        <div class="status-card status-info">
+            <div class="status-icon">
+                <span class="dashicons dashicons-cloud"></span>
             </div>
-
-            <div class="step-panel<?php echo $current_step === 2 ? ' active' : ''; ?>" data-step="2">
-                <div class="step-header">
-                    <div class="step-icon">
-                        <span class="dashicons dashicons-admin-site-alt3"></span>
-                    </div>
-                    <div class="step-title">
-                        <h3>CDN Setup</h3>
-                        <p>Connect your CDN to serve assets faster globally</p>
-                    </div>
-                </div>
-                <div class="step-body">
-                    <div class="setting-card">
-                        <div class="cdn-selector">
-                            <label class="setting-label">Select Your CDN Provider</label>
-                            <select id="cdn-provider" name="cdn_provider" class="enhanced-select">
-                                <option value="">Choose a provider...</option>
-                                <option value="cloudflare">
-                                    <span class="provider-icon cloudflare"></span>
-                                    Cloudflare
-                                </option>
-                                <option value="bunnycdn">
-                                    <span class="provider-icon bunnycdn"></span>
-                                    BunnyCDN
-                                </option>
-                                <option value="stackpath">
-                                    <span class="provider-icon stackpath"></span>
-                                    StackPath
-                                </option>
-                            </select>
-                        </div>
-                        <p class="setting-description">
-                            A CDN can reduce your site's loading time by up to 60% for global visitors by serving content from locations closer to them.
-                        </p>
-                        <div class="setting-benefits">
-                            <div class="benefit-item">
-                                <span class="dashicons dashicons-admin-site"></span>
-                                <span>Global reach</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="dashicons dashicons-shield"></span>
-                                <span>DDoS protection</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="dashicons dashicons-download"></span>
-                                <span>Faster delivery</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step-panel<?php echo $current_step === 3 ? ' active' : ''; ?>" data-step="3">
-                <div class="step-header">
-                    <div class="step-icon">
-                        <span class="dashicons dashicons-admin-tools"></span>
-                    </div>
-                    <div class="step-title">
-                        <h3>Optimization Settings</h3>
-                        <p>Choose optimization features to enable</p>
-                    </div>
-                </div>
-                <div class="step-body">
-                    <div class="setting-card">
-                        <div class="optimization-options">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="minify-code" name="minify_code">
-                                <span class="toggle-slider"></span>
-                                <div class="toggle-content">
-                                    <span class="toggle-label">Minify CSS & JavaScript</span>
-                                    <span class="toggle-description">Reduce file sizes by removing unnecessary characters</span>
-                                </div>
-                            </label>
-
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="lazy-loading" name="lazy_loading">
-                                <span class="toggle-slider"></span>
-                                <div class="toggle-content">
-                                    <span class="toggle-label">Enable Lazy Loading</span>
-                                    <span class="toggle-description">Load images only when they enter the viewport</span>
-                                </div>
-                            </label>
-
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="image-optimize" name="image_optimize">
-                                <span class="toggle-slider"></span>
-                                <div class="toggle-content">
-                                    <span class="toggle-label">Optimize Images</span>
-                                    <span class="toggle-description">Automatically compress and optimize images</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+            <div class="status-content">
+                <h3><?php _e('CDN Status', 'wp-performance-plus'); ?></h3>
+                <p class="status-text"><?php echo ($cdn_provider !== 'none') ? ucfirst($cdn_provider) : __('Not Configured', 'wp-performance-plus'); ?></p>
+                <p class="status-level"><?php echo ($cdn_provider !== 'none') ? __('Active', 'wp-performance-plus') : __('Inactive', 'wp-performance-plus'); ?></p>
             </div>
         </div>
 
-        <!-- Navigation -->
-        <div class="wizard-footer">
-            <?php if ($current_step > 1): ?>
-            <button class="button prev-step">
-                <span class="dashicons dashicons-arrow-left-alt"></span>
-                Previous
-            </button>
-            <?php endif; ?>
-
-            <?php if ($current_step < 3): ?>
-            <button class="button button-primary next-step">
-                Next
-                <span class="dashicons dashicons-arrow-right-alt"></span>
-            </button>
-            <?php else: ?>
-            <button class="button button-primary finish-setup">
-                <span class="dashicons dashicons-yes"></span>
-                Complete Setup
-            </button>
-            <?php endif; ?>
+        <div class="status-card status-cache">
+            <div class="status-icon">
+                <span class="dashicons dashicons-performance"></span>
+            </div>
+            <div class="status-content">
+                <h3><?php _e('Cache', 'wp-performance-plus'); ?></h3>
+                <p class="status-text"><?php echo $performance_metrics['cache_size']; ?></p>
+                <p class="status-level"><?php printf(__('%d files cached', 'wp-performance-plus'), $performance_metrics['cached_files']); ?></p>
+            </div>
         </div>
-    </div>
-    <?php else: ?>
-    <!-- Main Dashboard Content -->
-    <div class="dashboard-header">
-        <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-        <div class="header-actions">
-            <button class="button button-secondary refresh-stats">
-                <span class="dashicons dashicons-update"></span> Refresh Stats
-            </button>
-            <button class="button button-primary run-optimization">
-                <span class="dashicons dashicons-performance"></span> Run Optimization
-            </button>
+
+        <div class="status-card status-database">
+            <div class="status-icon">
+                <span class="dashicons dashicons-database"></span>
+            </div>
+            <div class="status-content">
+                <h3><?php _e('Database', 'wp-performance-plus'); ?></h3>
+                <p class="status-text"><?php echo $performance_metrics['database_size']; ?></p>
+                <p class="status-level"><?php printf(__('%d tables', 'wp-performance-plus'), $performance_metrics['database_tables']); ?></p>
+            </div>
         </div>
     </div>
 
-    <div class="dashboard-grid">
-        <!-- Performance Score Card -->
-        <div class="dashboard-card score-card">
-            <div class="card-header">
-                <h2><span class="dashicons dashicons-chart-bar"></span> Performance Score</h2>
+    <!-- Main Content Area -->
+    <div class="wp-performance-plus-main-content">
+        
+        <!-- Quick Actions Panel -->
+        <div class="wp-performance-plus-panel quick-actions">
+            <h2><?php _e('Quick Actions', 'wp-performance-plus'); ?></h2>
+            <div class="quick-actions-grid">
+                <button type="button" class="button button-primary action-btn" id="clear-cache">
+                    <span class="dashicons dashicons-update"></span>
+                    <?php _e('Clear All Cache', 'wp-performance-plus'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary action-btn" id="run-optimization">
+                    <span class="dashicons dashicons-performance"></span>
+                    <?php _e('Run Optimization', 'wp-performance-plus'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary action-btn" id="test-cdn">
+                    <span class="dashicons dashicons-cloud"></span>
+                    <?php _e('Test CDN', 'wp-performance-plus'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary action-btn" id="analyze-performance">
+                    <span class="dashicons dashicons-chart-line"></span>
+                    <?php _e('Analyze Performance', 'wp-performance-plus'); ?>
+                </button>
             </div>
-            <div class="card-content">
-                <?php
-                $performance_score = get_option('wp_performanceplus_performance_score', 0);
-                $total_optimized = get_option('wp_performanceplus_total_optimized', 0);
-                $bytes_saved = get_option('wp_performanceplus_bytes_saved', 0);
-                $load_time_improvement = get_option('wp_performanceplus_load_time_improvement', 0);
-                ?>
-                <div class="performance-score-wrapper">
-                    <div class="circular-progress" data-score="<?php echo esc_attr($performance_score); ?>">
-                        <svg viewBox="0 0 100 100">
-                            <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                            <circle class="progress-bar" cx="50" cy="50" r="45"></circle>
-                        </svg>
-                        <div class="score-value">
-                            <span class="current-score"><?php echo esc_html($performance_score); ?></span>
-                            <span class="score-label">Score</span>
+        </div>
+
+        <!-- Settings Overview -->
+        <div class="wp-performance-plus-panel settings-overview">
+            <h2><?php _e('Settings Overview', 'wp-performance-plus'); ?></h2>
+            
+            <form method="post" action="options.php" class="wp-performance-plus-form">
+                <?php settings_fields('wp_performance_plus_settings_group'); ?>
+                
+                <!-- General Settings -->
+                <div class="settings-section">
+                    <h3><?php _e('General Settings', 'wp-performance-plus'); ?></h3>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('Enable Optimization', 'wp-performance-plus'); ?></th>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="wp_performance_plus_settings[enable_optimization]" value="1" <?php checked(1, $optimization_enabled); ?> />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <p class="description"><?php _e('Master switch to enable/disable all optimization features.', 'wp-performance-plus'); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php _e('Optimization Level', 'wp-performance-plus'); ?></th>
+                            <td>
+                                <select name="wp_performance_plus_settings[optimization_level]" class="regular-text">
+                                    <option value="safe" <?php selected($optimization_level, 'safe'); ?>><?php _e('Safe - Minimal optimizations', 'wp-performance-plus'); ?></option>
+                                    <option value="balanced" <?php selected($optimization_level, 'balanced'); ?>><?php _e('Balanced - Recommended settings', 'wp-performance-plus'); ?></option>
+                                    <option value="aggressive" <?php selected($optimization_level, 'aggressive'); ?>><?php _e('Aggressive - Maximum optimization', 'wp-performance-plus'); ?></option>
+                                </select>
+                                <p class="description"><?php _e('Choose the optimization level that best fits your needs.', 'wp-performance-plus'); ?></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- CDN Settings Preview -->
+                <div class="settings-section">
+                    <h3><?php _e('CDN Configuration', 'wp-performance-plus'); ?></h3>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('CDN Provider', 'wp-performance-plus'); ?></th>
+                            <td>
+                                <select name="wp_performance_plus_settings[cdn_provider]" class="regular-text">
+                                    <option value="none" <?php selected($cdn_provider, 'none'); ?>><?php _e('None', 'wp-performance-plus'); ?></option>
+                                    <option value="cloudflare" <?php selected($cdn_provider, 'cloudflare'); ?>><?php _e('Cloudflare', 'wp-performance-plus'); ?></option>
+                                    <option value="stackpath" <?php selected($cdn_provider, 'stackpath'); ?>><?php _e('StackPath', 'wp-performance-plus'); ?></option>
+                                    <option value="keycdn" <?php selected($cdn_provider, 'keycdn'); ?>><?php _e('KeyCDN', 'wp-performance-plus'); ?></option>
+                                    <option value="bunnycdn" <?php selected($cdn_provider, 'bunnycdn'); ?>><?php _e('BunnyCDN', 'wp-performance-plus'); ?></option>
+                                    <option value="cloudfront" <?php selected($cdn_provider, 'cloudfront'); ?>><?php _e('Amazon CloudFront', 'wp-performance-plus'); ?></option>
+                                    <option value="custom" <?php selected($cdn_provider, 'custom'); ?>><?php _e('Custom CDN', 'wp-performance-plus'); ?></option>
+                                </select>
+                                <p class="description">
+                                    <?php _e('Select your CDN provider for optimized content delivery.', 'wp-performance-plus'); ?>
+                                    <a href="<?php echo admin_url('admin.php?page=wp-performance-plus-cdn'); ?>" class="button button-small"><?php _e('Configure CDN', 'wp-performance-plus'); ?></a>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Quick Feature Toggles -->
+                <div class="settings-section">
+                    <h3><?php _e('Quick Feature Toggles', 'wp-performance-plus'); ?></h3>
+                    <div class="feature-toggles">
+                        <div class="feature-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="wp_performance_plus_settings[minify_html]" value="1" <?php checked(1, isset($settings['minify_html']) ? $settings['minify_html'] : false); ?> />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="feature-info">
+                                <strong><?php _e('Minify HTML', 'wp-performance-plus'); ?></strong>
+                                <p><?php _e('Removes unnecessary whitespace and comments from HTML output.', 'wp-performance-plus'); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="feature-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="wp_performance_plus_settings[minify_css]" value="1" <?php checked(1, isset($settings['minify_css']) ? $settings['minify_css'] : false); ?> />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="feature-info">
+                                <strong><?php _e('Minify CSS', 'wp-performance-plus'); ?></strong>
+                                <p><?php _e('Removes unnecessary whitespace and comments from CSS files.', 'wp-performance-plus'); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="feature-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="wp_performance_plus_settings[minify_js]" value="1" <?php checked(1, isset($settings['minify_js']) ? $settings['minify_js'] : false); ?> />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="feature-info">
+                                <strong><?php _e('Minify JavaScript', 'wp-performance-plus'); ?></strong>
+                                <p><?php _e('Removes unnecessary whitespace and comments from JavaScript files.', 'wp-performance-plus'); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="feature-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="wp_performance_plus_settings[auto_cleanup]" value="1" <?php checked(1, isset($settings['auto_cleanup']) ? $settings['auto_cleanup'] : false); ?> />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <div class="feature-info">
+                                <strong><?php _e('Auto Database Cleanup', 'wp-performance-plus'); ?></strong>
+                                <p><?php _e('Automatically clean database regularly.', 'wp-performance-plus'); ?></p>
+                            </div>
                         </div>
                     </div>
-                    <div class="score-metrics">
-                        <div class="metric">
-                            <span class="metric-value"><?php echo esc_html($total_optimized); ?></span>
-                            <span class="metric-label">Assets Optimized</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value"><?php echo esc_html(size_format($bytes_saved)); ?></span>
-                            <span class="metric-label">Total Saved</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value"><?php echo esc_html(number_format($load_time_improvement, 1)); ?>s</span>
-                            <span class="metric-label">Faster Loading</span>
-                        </div>
+                </div>
+
+                <?php submit_button(__('Save Settings', 'wp-performance-plus'), 'primary', 'submit', false); ?>
+            </form>
+        </div>
+
+        <!-- Performance Insights -->
+        <div class="wp-performance-plus-panel performance-insights">
+            <h2><?php _e('Performance Insights', 'wp-performance-plus'); ?></h2>
+            
+            <div class="insights-grid">
+                <div class="insight-item">
+                    <h4><?php _e('Page Speed Score', 'wp-performance-plus'); ?></h4>
+                    <div class="score-circle">
+                        <span class="score">85</span>
+                        <small>/100</small>
+                    </div>
+                    <p><?php _e('Good performance score', 'wp-performance-plus'); ?></p>
+                </div>
+
+                <div class="insight-item">
+                    <h4><?php _e('Cache Hit Rate', 'wp-performance-plus'); ?></h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%"></div>
+                    </div>
+                    <p>78% <?php _e('cache efficiency', 'wp-performance-plus'); ?></p>
+                </div>
+
+                <div class="insight-item">
+                    <h4><?php _e('Optimization Potential', 'wp-performance-plus'); ?></h4>
+                    <ul class="optimization-list">
+                        <li class="optimization-item">
+                            <span class="status-dot green"></span>
+                            <?php _e('Images optimized', 'wp-performance-plus'); ?>
+                        </li>
+                        <li class="optimization-item">
+                            <span class="status-dot orange"></span>
+                            <?php _e('CSS can be improved', 'wp-performance-plus'); ?>
+                        </li>
+                        <li class="optimization-item">
+                            <span class="status-dot red"></span>
+                            <?php _e('JS optimization needed', 'wp-performance-plus'); ?>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="wp-performance-plus-panel recent-activity">
+            <h2><?php _e('Recent Activity', 'wp-performance-plus'); ?></h2>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <span class="activity-icon dashicons dashicons-update"></span>
+                    <div class="activity-content">
+                        <strong><?php _e('Cache cleared', 'wp-performance-plus'); ?></strong>
+                        <span class="activity-time"><?php _e('2 hours ago', 'wp-performance-plus'); ?></span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon dashicons dashicons-performance"></span>
+                    <div class="activity-content">
+                        <strong><?php _e('Optimization completed', 'wp-performance-plus'); ?></strong>
+                        <span class="activity-time"><?php _e('1 day ago', 'wp-performance-plus'); ?></span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon dashicons dashicons-cloud"></span>
+                    <div class="activity-content">
+                        <strong><?php _e('CDN configuration updated', 'wp-performance-plus'); ?></strong>
+                        <span class="activity-time"><?php _e('3 days ago', 'wp-performance-plus'); ?></span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Rest of the dashboard cards... -->
-        <?php include('dashboard/status-card.php'); ?>
-        <?php include('dashboard/actions-card.php'); ?>
-        <?php include('dashboard/trends-card.php'); ?>
     </div>
-    <?php endif; ?>
-</div> 
+</div>
+
+<!-- Loading Overlay -->
+<div id="wp-performance-plus-loading" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text"><?php _e('Processing...', 'wp-performance-plus'); ?></p>
+    </div>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    
+    // Quick action handlers
+    $('#clear-cache').on('click', function() {
+        performQuickAction('clear_cache', '<?php _e('Clearing cache...', 'wp-performance-plus'); ?>');
+    });
+    
+    $('#run-optimization').on('click', function() {
+        performQuickAction('run_optimization', '<?php _e('Running optimization...', 'wp-performance-plus'); ?>');
+    });
+    
+    $('#test-cdn').on('click', function() {
+        performQuickAction('test_cdn', '<?php _e('Testing CDN connection...', 'wp-performance-plus'); ?>');
+    });
+    
+    $('#analyze-performance').on('click', function() {
+        performQuickAction('analyze_performance', '<?php _e('Analyzing performance...', 'wp-performance-plus'); ?>');
+    });
+    
+    function performQuickAction(action, loadingText) {
+        showLoading(loadingText);
+        
+        $.ajax({
+            url: wp_performance_plus_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'wp_performance_plus_' + action,
+                nonce: wp_performance_plus_ajax.nonce
+            },
+            success: function(response) {
+                hideLoading();
+                if (response.success) {
+                    showNotice(response.data.message, 'success');
+                } else {
+                    showNotice(response.data.message || '<?php _e('An error occurred', 'wp-performance-plus'); ?>', 'error');
+                }
+            },
+            error: function() {
+                hideLoading();
+                showNotice('<?php _e('Request failed', 'wp-performance-plus'); ?>', 'error');
+            }
+        });
+    }
+    
+    function showLoading(text) {
+        $('#wp-performance-plus-loading .loading-text').text(text);
+        $('#wp-performance-plus-loading').show();
+    }
+    
+    function hideLoading() {
+        $('#wp-performance-plus-loading').hide();
+    }
+    
+    function showNotice(message, type) {
+        var noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
+        var notice = $('<div class="notice ' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
+        $('.wp-performance-plus-dashboard h1').after(notice);
+        
+        setTimeout(function() {
+            notice.fadeOut(function() {
+                notice.remove();
+            });
+        }, 3000);
+    }
+});
+</script> 

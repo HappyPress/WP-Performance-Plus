@@ -1,6 +1,27 @@
 <?php
 /**
  * The admin-specific functionality of the plugin.
+ *
+ * @link       https://github.com/HappyPress/WP-Performance-Plus
+ * @since      1.0.0
+ *
+ * @package    WP_Performance_Plus
+ * @subpackage WP_Performance_Plus/admin
+ */
+
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+    die;
+}
+
+/**
+ * The admin-specific functionality of the plugin.
+ *
+ * Defines the plugin name, version, and hooks for admin-specific functionality.
+ *
+ * @package    WP_Performance_Plus
+ * @subpackage WP_Performance_Plus/admin
+ * @author     HappyPress <info@happypress.com>
  */
 class WP_Performance_Plus_Admin {
     private $plugin_name;
@@ -12,7 +33,7 @@ class WP_Performance_Plus_Admin {
     public function __construct($plugin_name, $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
-        $this->settings = get_option('wp_performance_plus_settings', array());
+        $this->settings = get_option('wp_performance_plus_settings', $this->get_default_settings());
         $this->active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'basics';
         $this->cdn_handlers = array();
 
@@ -31,6 +52,9 @@ class WP_Performance_Plus_Admin {
         add_action('wp_ajax_wp_performance_plus_clear_cache', array($this, 'handle_clear_cache'));
         add_action('wp_ajax_wp_performance_plus_optimize_images', array($this, 'handle_optimize_images'));
         add_action('wp_ajax_wp_performance_plus_optimize_database', array($this, 'handle_optimize_database'));
+
+        // Settings saved hooks
+        add_action('wp_performance_plus_settings_saved', array($this, 'handle_settings_saved'));
     }
 
     /**
@@ -184,15 +208,270 @@ class WP_Performance_Plus_Admin {
      */
     public function register_settings() {
         register_setting(
+            'wp_performance_plus_settings_group',
             'wp_performance_plus_settings',
-            'wp_performance_plus_settings',
+            array($this, 'sanitize_settings')
+        );
+
+        // Register settings sections
+        $this->register_general_settings();
+        $this->register_cdn_settings();
+        $this->register_optimization_settings();
+        $this->register_database_settings();
+    }
+
+    /**
+     * Register general settings section.
+     */
+    private function register_general_settings() {
+        add_settings_section(
+            'wp_performance_plus_general',
+            __('General Settings', 'wp-performance-plus'),
+            array($this, 'general_section_callback'),
+            'wp-performance-plus'
+        );
+
+        add_settings_field(
+            'enable_optimization',
+            __('Enable Optimization', 'wp-performance-plus'),
+            array($this, 'render_checkbox_field'),
+            'wp-performance-plus',
+            'wp_performance_plus_general',
             array(
-                'type' => 'array',
-                'sanitize_callback' => array($this, 'sanitize_settings')
+                'name' => 'enable_optimization',
+                'label' => __('Enable all optimization features', 'wp-performance-plus'),
+                'description' => __('Master switch to enable/disable all optimization features.', 'wp-performance-plus')
             )
         );
 
-        // Add settings sections and fields here
+        add_settings_field(
+            'optimization_level',
+            __('Optimization Level', 'wp-performance-plus'),
+            array($this, 'render_select_field'),
+            'wp-performance-plus',
+            'wp_performance_plus_general',
+            array(
+                'name' => 'optimization_level',
+                'options' => array(
+                    'safe' => __('Safe - Minimal optimizations', 'wp-performance-plus'),
+                    'balanced' => __('Balanced - Recommended settings', 'wp-performance-plus'),
+                    'aggressive' => __('Aggressive - Maximum optimization', 'wp-performance-plus')
+                ),
+                'description' => __('Choose the optimization level that best fits your needs.', 'wp-performance-plus')
+            )
+        );
+    }
+
+    /**
+     * Register CDN settings section.
+     */
+    private function register_cdn_settings() {
+        add_settings_section(
+            'wp_performance_plus_cdn',
+            __('CDN Settings', 'wp-performance-plus'),
+            array($this, 'cdn_section_callback'),
+            'wp-performance-plus-cdn'
+        );
+
+        // CDN Provider Selection
+        add_settings_field(
+            'cdn_provider',
+            __('CDN Provider', 'wp-performance-plus'),
+            array($this, 'render_select_field'),
+            'wp-performance-plus-cdn',
+            'wp_performance_plus_cdn',
+            array(
+                'name' => 'cdn_provider',
+                'options' => array(
+                    'none' => __('None', 'wp-performance-plus'),
+                    'cloudflare' => __('Cloudflare', 'wp-performance-plus'),
+                    'stackpath' => __('StackPath', 'wp-performance-plus'),
+                    'keycdn' => __('KeyCDN', 'wp-performance-plus'),
+                    'bunnycdn' => __('BunnyCDN', 'wp-performance-plus'),
+                    'cloudfront' => __('Amazon CloudFront', 'wp-performance-plus'),
+                    'custom' => __('Custom CDN', 'wp-performance-plus')
+                ),
+                'description' => __('Select your CDN provider for optimized content delivery.', 'wp-performance-plus')
+            )
+        );
+    }
+
+    /**
+     * Register optimization settings section.
+     */
+    private function register_optimization_settings() {
+        add_settings_section(
+            'wp_performance_plus_optimization',
+            __('Optimization Settings', 'wp-performance-plus'),
+            array($this, 'optimization_section_callback'),
+            'wp-performance-plus-optimization'
+        );
+
+        // Asset Optimization
+        add_settings_field(
+            'minify_html',
+            __('Minify HTML', 'wp-performance-plus'),
+            array($this, 'render_checkbox_field'),
+            'wp-performance-plus-optimization',
+            'wp_performance_plus_optimization',
+            array(
+                'name' => 'minify_html',
+                'label' => __('Enable HTML minification', 'wp-performance-plus'),
+                'description' => __('Removes unnecessary whitespace and comments from HTML output.', 'wp-performance-plus')
+            )
+        );
+
+        add_settings_field(
+            'minify_css',
+            __('Minify CSS', 'wp-performance-plus'),
+            array($this, 'render_checkbox_field'),
+            'wp-performance-plus-optimization',
+            'wp_performance_plus_optimization',
+            array(
+                'name' => 'minify_css',
+                'label' => __('Enable CSS minification', 'wp-performance-plus'),
+                'description' => __('Removes unnecessary whitespace and comments from CSS files.', 'wp-performance-plus')
+            )
+        );
+
+        add_settings_field(
+            'minify_js',
+            __('Minify JavaScript', 'wp-performance-plus'),
+            array($this, 'render_checkbox_field'),
+            'wp-performance-plus-optimization',
+            'wp_performance_plus_optimization',
+            array(
+                'name' => 'minify_js',
+                'label' => __('Enable JavaScript minification', 'wp-performance-plus'),
+                'description' => __('Removes unnecessary whitespace and comments from JavaScript files.', 'wp-performance-plus')
+            )
+        );
+    }
+
+    /**
+     * Register database settings section.
+     */
+    private function register_database_settings() {
+        add_settings_section(
+            'wp_performance_plus_database',
+            __('Database Settings', 'wp-performance-plus'),
+            array($this, 'database_section_callback'),
+            'wp-performance-plus-database'
+        );
+
+        add_settings_field(
+            'auto_cleanup',
+            __('Auto Cleanup', 'wp-performance-plus'),
+            array($this, 'render_checkbox_field'),
+            'wp-performance-plus-database',
+            'wp_performance_plus_database',
+            array(
+                'name' => 'auto_cleanup',
+                'label' => __('Enable automatic database cleanup', 'wp-performance-plus'),
+                'description' => __('Automatically clean database regularly.', 'wp-performance-plus')
+            )
+        );
+    }
+
+    /**
+     * Get default settings.
+     */
+    public function get_default_settings() {
+        return array(
+            'enable_optimization' => true,
+            'optimization_level' => 'balanced',
+            'cdn_provider' => 'none',
+            'minify_html' => false,
+            'minify_css' => false,
+            'minify_js' => false,
+            'auto_cleanup' => false,
+            // CDN specific settings will be added dynamically
+            'cloudflare' => array(
+                'email' => '',
+                'api_key' => '',
+                'zone_id' => '',
+                'enabled' => false
+            ),
+            'stackpath' => array(
+                'alias' => '',
+                'api_key' => '',
+                'enabled' => false
+            ),
+            'keycdn' => array(
+                'api_key' => '',
+                'zone_id' => '',
+                'enabled' => false
+            ),
+            'bunnycdn' => array(
+                'api_key' => '',
+                'storage_zone' => '',
+                'enabled' => false
+            ),
+            'cloudfront' => array(
+                'access_key' => '',
+                'secret_key' => '',
+                'distribution_id' => '',
+                'enabled' => false
+            )
+        );
+    }
+
+    /**
+     * Sanitize settings
+     */
+    public function sanitize_settings($input) {
+        $sanitized = array();
+        
+        // Boolean fields
+        $boolean_fields = array(
+            'enable_optimization', 'minify_html', 'minify_css', 
+            'minify_js', 'auto_cleanup'
+        );
+        
+        foreach ($boolean_fields as $field) {
+            $sanitized[$field] = isset($input[$field]) && $input[$field] ? true : false;
+        }
+        
+        // Text fields
+        $text_fields = array(
+            'optimization_level', 'cdn_provider'
+        );
+        
+        foreach ($text_fields as $field) {
+            $sanitized[$field] = isset($input[$field]) ? sanitize_text_field($input[$field]) : '';
+        }
+        
+        // CDN settings sanitization
+        if (isset($input['cloudflare']) && is_array($input['cloudflare'])) {
+            $sanitized['cloudflare'] = array(
+                'email' => sanitize_email($input['cloudflare']['email']),
+                'api_key' => sanitize_text_field($input['cloudflare']['api_key']),
+                'zone_id' => sanitize_text_field($input['cloudflare']['zone_id']),
+                'enabled' => isset($input['cloudflare']['enabled']) && $input['cloudflare']['enabled']
+            );
+        }
+        
+        // Trigger action after settings are saved
+        do_action('wp_performance_plus_settings_saved', $sanitized, $input);
+        
+        return $sanitized;
+    }
+
+    /**
+     * Handle settings saved action.
+     */
+    public function handle_settings_saved($sanitized) {
+        // Clear cache when settings change
+        if (class_exists('WP_Performance_Plus_Cache')) {
+            WP_Performance_Plus_Cache::clear_all_cache();
+        }
+        
+        // Add admin notice
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-success is-dismissible">';
+            echo '<p>' . __('Settings saved successfully!', 'wp-performance-plus') . '</p>';
+            echo '</div>';
+        });
     }
 
     /**
@@ -219,27 +498,6 @@ class WP_Performance_Plus_Admin {
             // Fallback to main page if settings file doesn't exist
             require_once plugin_dir_path(__FILE__) . 'partials/wp-performance-plus-main.php';
         }
-    }
-
-    /**
-     * Sanitize settings
-     */
-    public function sanitize_settings($input) {
-        $sanitized = array();
-
-        if (isset($input['enable_minification'])) {
-            $sanitized['enable_minification'] = (bool) $input['enable_minification'];
-        }
-
-        if (isset($input['combine_files'])) {
-            $sanitized['combine_files'] = (bool) $input['combine_files'];
-        }
-
-        if (isset($input['lazy_loading'])) {
-            $sanitized['lazy_loading'] = (bool) $input['lazy_loading'];
-        }
-
-        return $sanitized;
     }
 
     /**
@@ -409,5 +667,58 @@ class WP_Performance_Plus_Admin {
             return;
         }
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/wp-performance-plus-welcome.php';
+    }
+
+    // Section callbacks
+    public function general_section_callback() {
+        echo '<p>' . __('Configure general optimization settings.', 'wp-performance-plus') . '</p>';
+    }
+
+    public function cdn_section_callback() {
+        echo '<p>' . __('Configure your CDN provider settings for optimal content delivery.', 'wp-performance-plus') . '</p>';
+    }
+
+    public function optimization_section_callback() {
+        echo '<p>' . __('Configure local optimization settings for your website.', 'wp-performance-plus') . '</p>';
+    }
+
+    public function database_section_callback() {
+        echo '<p>' . __('Configure database optimization and cleanup settings.', 'wp-performance-plus') . '</p>';
+    }
+
+    // Field rendering methods
+    public function render_checkbox_field($args) {
+        $name = $args['name'];
+        $value = isset($this->settings[$name]) ? $this->settings[$name] : false;
+        $label = isset($args['label']) ? $args['label'] : '';
+        $description = isset($args['description']) ? $args['description'] : '';
+        
+        echo '<label>';
+        echo '<input type="checkbox" name="wp_performance_plus_settings[' . esc_attr($name) . ']" value="1"' . checked(1, $value, false) . ' />';
+        echo ' ' . esc_html($label);
+        echo '</label>';
+        
+        if ($description) {
+            echo '<p class="description">' . esc_html($description) . '</p>';
+        }
+    }
+
+    public function render_select_field($args) {
+        $name = $args['name'];
+        $value = isset($this->settings[$name]) ? $this->settings[$name] : '';
+        $options = isset($args['options']) ? $args['options'] : array();
+        $description = isset($args['description']) ? $args['description'] : '';
+        
+        echo '<select name="wp_performance_plus_settings[' . esc_attr($name) . ']">';
+        foreach ($options as $option_value => $option_label) {
+            echo '<option value="' . esc_attr($option_value) . '"' . selected($value, $option_value, false) . '>';
+            echo esc_html($option_label);
+            echo '</option>';
+        }
+        echo '</select>';
+        
+        if ($description) {
+            echo '<p class="description">' . esc_html($description) . '</p>';
+        }
     }
 } 
