@@ -1,254 +1,393 @@
 <?php
 /**
- * Class WP_Performance_Plus_Cloudflare
+ * Cloudflare CDN Provider Implementation
  * 
- * Manages Cloudflare CDN integration functionality.
- * Handles API authentication, zone management, and cache purging.
- * Provides settings interface for Cloudflare configuration.
+ * Handles Cloudflare CDN integration including API authentication,
+ * zone management, cache purging, and URL rewriting.
+ * 
+ * @package    WP_Performance_Plus
+ * @subpackage WP_Performance_Plus/admin
+ * @since      1.0.0
  */
-class WP_Performance_Plus_Cloudflare {
-    /** @var string Option name for storing API token */
-    private const OPTION_API_TOKEN = 'wp_performance_plus_cloudflare_api_token';
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class WP_Performance_Plus_Cloudflare extends WP_Performance_Plus_CDN_Provider {
     
-    /** @var string Option name for storing Zone ID */
-    private const OPTION_ZONE_ID = 'wp_performance_plus_cloudflare_zone_id';
+    /**
+     * Get provider name
+     * @return string
+     */
+    protected function get_provider_name() {
+        return 'cloudflare';
+    }
     
-    /** @var string Option name for development mode */
-    private const OPTION_DEV_MODE = 'wp_performance_plus_cloudflare_dev_mode';
+    /**
+     * Get API base URL
+     * @return string
+     */
+    protected function get_api_base_url() {
+        return 'https://api.cloudflare.com/client/v4';
+    }
     
-    /** @var string Cloudflare API base URL */
-    private const API_BASE_URL = 'https://api.cloudflare.com/client/v4/';
-
     /**
-     * Initialize Cloudflare integration
-     * Sets up necessary hooks and actions for admin functionality
+     * Validate API credentials
+     * @return bool|WP_Error
      */
-    public function __construct() {
-        // Handle form submissions for saving settings
-        add_action('admin_post_wp_performance_plus_cloudflare_save', [$this, 'save_cloudflare_settings']);
+    public function validate_credentials() {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API token and zone ID are required.', 'wp-performance-plus'));
+        }
         
-        // Add cache purge action
-        add_action('wp_performance_plus_purge_cache', [$this, 'purge_cache']);
+        $result = $this->make_api_request('user/tokens/verify');
         
-        // Add development mode toggle
-        add_action('wp_ajax_toggle_cloudflare_dev_mode', [$this, 'toggle_development_mode']);
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        if (isset($result['status']) && $result['status'] === 'active') {
+            $this->log('API credentials validated successfully');
+            return true;
+        }
+        
+        return new WP_Error('invalid_credentials', __('Invalid API credentials.', 'wp-performance-plus'));
     }
-
+    
     /**
-     * Renders the Cloudflare settings interface
-     * Displays form for API credentials and zone configuration
+     * Check if required credentials are present
+     * @return bool
      */
-    public function render_settings() {
-        $api_token = get_option(self::OPTION_API_TOKEN, '');
-        $zone_id = get_option(self::OPTION_ZONE_ID, '');
-        $dev_mode = get_option(self::OPTION_DEV_MODE, false);
-        
-        // Check API connection status
-        $connection_status = $this->validate_api_credentials();
-        ?>
-        <div class="cdn-settings-form">
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                <input type="hidden" name="action" value="wp_performance_plus_cloudflare_save">
-                <?php wp_nonce_field('wp_performance_plus_cloudflare_save_nonce', '_wpnonce'); ?>
-                
-                <div class="cdn-provider-settings">
-                    <h3><?php esc_html_e('Cloudflare Settings', 'wp-performance-plus'); ?></h3>
-                    
-                    <?php if (is_wp_error($connection_status)): ?>
-                        <div class="notice notice-error">
-                            <p><?php echo esc_html($connection_status->get_error_message()); ?></p>
-                        </div>
-                    <?php elseif ($api_token): ?>
-                        <div class="notice notice-success">
-                            <p><?php esc_html_e('Successfully connected to Cloudflare!', 'wp-performance-plus'); ?></p>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">
-                                <label for="cloudflare_api_token">
-                                    <?php esc_html_e('API Token', 'wp-performance-plus'); ?>
-                                </label>
-                            </th>
-                            <td>
-                                <input type="password" 
-                                       name="cloudflare_api_token" 
-                                       id="cloudflare_api_token" 
-                                       value="<?php echo esc_attr($api_token); ?>" 
-                                       class="regular-text"
-                                       autocomplete="off"
-                                >
-                            </td>
-                        </tr>
-                        
-                        <?php if ($api_token): ?>
-                        <tr>
-                            <th scope="row">
-                                <label for="cloudflare_zone_id">
-                                    <?php esc_html_e('Zone ID', 'wp-performance-plus'); ?>
-                                </label>
-                            </th>
-                            <td>
-                                <?php 
-                                $zones = $this->get_available_zones();
-                                if (is_wp_error($zones)): 
-                                ?>
-                                    <p class="description error">
-                                        <?php echo esc_html($zones->get_error_message()); ?>
-                                    </p>
-                                <?php else: ?>
-                                    <select name="cloudflare_zone_id" id="cloudflare_zone_id">
-                                        <option value=""><?php esc_html_e('Select a domain', 'wp-performance-plus'); ?></option>
-                                        <?php foreach ($zones as $zone): ?>
-                                            <option value="<?php echo esc_attr($zone['id']); ?>" 
-                                                    <?php selected($zone_id, $zone['id']); ?>>
-                                                <?php echo esc_html($zone['name']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row">
-                                <?php esc_html_e('Development Mode', 'wp-performance-plus'); ?>
-                            </th>
-                            <td>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" 
-                                           name="cloudflare_dev_mode" 
-                                           id="cloudflare_dev_mode" 
-                                           <?php checked($dev_mode); ?>
-                                    >
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                        <?php endif; ?>
-                    </table>
-                    
-                    <p class="submit">
-                        <button type="submit" class="button button-primary">
-                            <?php esc_html_e('Save Settings', 'wp-performance-plus'); ?>
-                        </button>
-                        
-                        <?php if ($api_token && $zone_id): ?>
-                            <button type="button" class="button" id="purge_cloudflare_cache">
-                                <?php esc_html_e('Purge Cache', 'wp-performance-plus'); ?>
-                            </button>
-                        <?php endif; ?>
-                    </p>
-                </div>
-            </form>
-        </div>
-        <?php
+    protected function has_required_credentials() {
+        return !empty($this->settings['api_token']) && !empty($this->settings['zone_id']);
     }
-
+    
     /**
-     * Validates the API credentials
+     * Get API headers for authentication
+     * @return array
      */
-    public function validate_api_credentials() {
-        return $this->make_api_request('user/tokens/verify');
+    protected function get_api_headers() {
+        return array(
+            'Authorization' => 'Bearer ' . $this->settings['api_token'],
+            'Content-Type' => 'application/json'
+        );
     }
-
+    
     /**
-     * Makes an authenticated request to the Cloudflare API
+     * Purge all cache
+     * @return bool|WP_Error
      */
-    private function make_api_request($endpoint, $args = []) {
-        $api_token = get_option(self::OPTION_API_TOKEN, '');
+    public function purge_all_cache() {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required for cache purging.', 'wp-performance-plus'));
+        }
         
-        if (empty($api_token)) {
+        $result = $this->make_api_request(
+            'zones/' . $this->settings['zone_id'] . '/purge_cache',
+            array(
+                'method' => 'POST',
+                'body' => array('purge_everything' => true)
+            )
+        );
+        
+        if (is_wp_error($result)) {
+            $this->log('Cache purge failed', array('error' => $result->get_error_message()));
+            return $result;
+        }
+        
+        $this->log('All cache purged successfully');
+        return true;
+    }
+    
+    /**
+     * Purge specific URLs
+     * @param array $urls URLs to purge
+     * @return bool|WP_Error
+     */
+    public function purge_urls($urls) {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required for cache purging.', 'wp-performance-plus'));
+        }
+        
+        if (empty($urls) || !is_array($urls)) {
+            return new WP_Error('invalid_urls', __('Valid URLs array is required.', 'wp-performance-plus'));
+        }
+        
+        // Cloudflare has a limit of 30 URLs per request
+        $url_chunks = array_chunk($urls, 30);
+        
+        foreach ($url_chunks as $chunk) {
+            $result = $this->make_api_request(
+                'zones/' . $this->settings['zone_id'] . '/purge_cache',
+                array(
+                    'method' => 'POST',
+                    'body' => array('files' => $chunk)
+                )
+            );
+            
+            if (is_wp_error($result)) {
+                $this->log('URL cache purge failed', array('urls' => $chunk, 'error' => $result->get_error_message()));
+                return $result;
+            }
+        }
+        
+        $this->log('URLs purged successfully', array('count' => count($urls)));
+        return true;
+    }
+    
+    /**
+     * Get zones/domains available for this account
+     * @return array|WP_Error
+     */
+    public function get_zones() {
+        if (empty($this->settings['api_token'])) {
             return new WP_Error('missing_token', __('API token is required.', 'wp-performance-plus'));
         }
-
-        $defaults = [
-            'method'  => 'GET',
-            'headers' => [
-                'Authorization' => 'Bearer ' . $api_token,
-                'Content-Type' => 'application/json',
-            ],
-            'timeout' => 30,
-        ];
-
-        $args = wp_parse_args($args, $defaults);
-        $url = self::API_BASE_URL . ltrim($endpoint, '/');
         
-        if (!empty($args['body']) && is_array($args['body'])) {
-            $args['body'] = wp_json_encode($args['body']);
-        }
-
-        $response = wp_remote_request($url, $args);
-
-        if (is_wp_error($response)) {
-            return $response;
-        }
-
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-
-        if (empty($data['success'])) {
-            $message = !empty($data['errors'][0]['message']) 
-                ? $data['errors'][0]['message'] 
-                : __('Unknown API error occurred.', 'wp-performance-plus');
-            return new WP_Error('api_error', $message);
-        }
-
-        return $data['result'];
-    }
-
-    /**
-     * Retrieves available zones from Cloudflare
-     */
-    public function get_available_zones() {
-        return $this->make_api_request('zones', ['per_page' => 50]);
-    }
-
-    /**
-     * Purges the Cloudflare cache
-     */
-    public function purge_cache() {
-        $zone_id = get_option(self::OPTION_ZONE_ID);
-        if (empty($zone_id)) {
-            return new WP_Error('missing_zone', __('Zone ID is required.', 'wp-performance-plus'));
-        }
-
-        return $this->make_api_request("zones/{$zone_id}/purge_cache", [
-            'method' => 'POST',
-            'body' => ['purge_everything' => true]
-        ]);
-    }
-
-    /**
-     * Toggles development mode
-     */
-    public function toggle_development_mode() {
-        check_ajax_referer('wp_performance_plus_ajax_nonce', 'nonce');
-
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('You do not have permission to perform this action.', 'wp-performance-plus'));
-        }
-
-        $zone_id = get_option(self::OPTION_ZONE_ID);
-        if (empty($zone_id)) {
-            wp_send_json_error(__('Zone ID is required.', 'wp-performance-plus'));
-        }
-
-        $dev_mode = get_option(self::OPTION_DEV_MODE, false);
-        $new_value = !$dev_mode;
-
-        $result = $this->make_api_request("zones/{$zone_id}/settings/development_mode", [
-            'method' => 'PATCH',
-            'body' => ['value' => $new_value ? 'on' : 'off']
-        ]);
-
+        $result = $this->make_api_request('zones?per_page=50');
+        
         if (is_wp_error($result)) {
-            wp_send_json_error($result->get_error_message());
+            return $result;
         }
-
-        update_option(self::OPTION_DEV_MODE, $new_value);
-        wp_send_json_success(['dev_mode' => $new_value]);
+        
+        $zones = array();
+        if (isset($result['result']) && is_array($result['result'])) {
+            foreach ($result['result'] as $zone) {
+                $zones[] = array(
+                    'id' => $zone['id'],
+                    'name' => $zone['name'],
+                    'status' => $zone['status'],
+                    'development_mode' => isset($zone['development_mode']) ? $zone['development_mode'] : 0
+                );
+            }
+        }
+        
+        return $zones;
+    }
+    
+    /**
+     * Get CDN statistics
+     * @return array|WP_Error
+     */
+    public function get_statistics() {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required.', 'wp-performance-plus'));
+        }
+        
+        // Get analytics for the last 24 hours
+        $since = date('c', strtotime('-24 hours'));
+        $until = date('c');
+        
+        $result = $this->make_api_request(
+            'zones/' . $this->settings['zone_id'] . '/analytics/dashboard',
+            array(
+                'method' => 'GET',
+                'body' => array(
+                    'since' => $since,
+                    'until' => $until
+                )
+            )
+        );
+        
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        $stats = array(
+            'requests_total' => 0,
+            'bandwidth_total' => 0,
+            'cache_hit_ratio' => 0,
+            'threats_blocked' => 0
+        );
+        
+        if (isset($result['result']['totals'])) {
+            $totals = $result['result']['totals'];
+            $stats['requests_total'] = isset($totals['requests']['all']) ? $totals['requests']['all'] : 0;
+            $stats['bandwidth_total'] = isset($totals['bandwidth']['all']) ? $totals['bandwidth']['all'] : 0;
+            $stats['cache_hit_ratio'] = isset($totals['requests']['cached']) && $stats['requests_total'] > 0 
+                ? round(($totals['requests']['cached'] / $stats['requests_total']) * 100, 2) 
+                : 0;
+            $stats['threats_blocked'] = isset($totals['threats']['all']) ? $totals['threats']['all'] : 0;
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get CDN URL for this provider
+     * @return string
+     */
+    protected function get_cdn_url() {
+        // For Cloudflare, the CDN URL is typically the same as the domain
+        // but we can check if there's a custom hostname configured
+        if (!empty($this->settings['custom_hostname'])) {
+            return 'https://' . $this->settings['custom_hostname'];
+        }
+        
+        return site_url();
+    }
+    
+    /**
+     * Toggle development mode
+     * @param bool $enable Enable or disable development mode
+     * @return bool|WP_Error
+     */
+    public function toggle_development_mode($enable = null) {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required.', 'wp-performance-plus'));
+        }
+        
+        // If enable is null, toggle current state
+        if ($enable === null) {
+            $zone_info = $this->get_zone_info();
+            if (is_wp_error($zone_info)) {
+                return $zone_info;
+            }
+            $enable = !$zone_info['development_mode'];
+        }
+        
+        $result = $this->make_api_request(
+            'zones/' . $this->settings['zone_id'] . '/settings/development_mode',
+            array(
+                'method' => 'PATCH',
+                'body' => array('value' => $enable ? 'on' : 'off')
+            )
+        );
+        
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        $this->log('Development mode toggled', array('enabled' => $enable));
+        return $enable;
+    }
+    
+    /**
+     * Get zone information
+     * @return array|WP_Error
+     */
+    public function get_zone_info() {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required.', 'wp-performance-plus'));
+        }
+        
+        $result = $this->make_api_request('zones/' . $this->settings['zone_id']);
+        
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        if (isset($result['result'])) {
+            return array(
+                'id' => $result['result']['id'],
+                'name' => $result['result']['name'],
+                'status' => $result['result']['status'],
+                'development_mode' => $result['result']['development_mode']
+            );
+        }
+        
+        return new WP_Error('invalid_response', __('Invalid API response.', 'wp-performance-plus'));
+    }
+    
+    /**
+     * Get provider-specific settings for the modern UI
+     * @return array
+     */
+    public function get_settings_fields() {
+        return array(
+            array(
+                'id' => 'api_token',
+                'name' => 'wp_performance_plus_settings[cloudflare][api_token]',
+                'label' => __('API Token', 'wp-performance-plus'),
+                'type' => 'password',
+                'icon' => 'lock',
+                'description' => __('Your Cloudflare API Token. You can create one in your Cloudflare dashboard under "My Profile" > "API Tokens".', 'wp-performance-plus')
+            ),
+            array(
+                'id' => 'zone_id',
+                'name' => 'wp_performance_plus_settings[cloudflare][zone_id]',
+                'label' => __('Zone ID', 'wp-performance-plus'),
+                'type' => 'text',
+                'icon' => 'admin-site-alt3',
+                'description' => __('Your Cloudflare Zone ID. You can find this in your Cloudflare dashboard under the "Overview" section of your domain.', 'wp-performance-plus')
+            ),
+            array(
+                'id' => 'custom_hostname',
+                'name' => 'wp_performance_plus_settings[cloudflare][custom_hostname]',
+                'label' => __('Custom Hostname', 'wp-performance-plus'),
+                'type' => 'text',
+                'icon' => 'admin-links',
+                'description' => __('Optional: Custom hostname for CDN URLs (leave empty to use your domain).', 'wp-performance-plus')
+            ),
+            array(
+                'id' => 'cache_level',
+                'name' => 'wp_performance_plus_settings[cloudflare][cache_level]',
+                'label' => __('Cache Level', 'wp-performance-plus'),
+                'type' => 'select',
+                'icon' => 'performance',
+                'options' => array(
+                    'aggressive' => __('Aggressive', 'wp-performance-plus'),
+                    'basic' => __('Basic', 'wp-performance-plus'),
+                    'simplified' => __('Simplified', 'wp-performance-plus')
+                ),
+                'description' => __('Set the cache level for your Cloudflare zone.', 'wp-performance-plus')
+            )
+        );
+    }
+    
+    /**
+     * Set cache level
+     * @param string $level Cache level (aggressive, basic, simplified)
+     * @return bool|WP_Error
+     */
+    public function set_cache_level($level = 'aggressive') {
+        if (!$this->has_required_credentials()) {
+            return new WP_Error('missing_credentials', __('API credentials required.', 'wp-performance-plus'));
+        }
+        
+        $valid_levels = array('aggressive', 'basic', 'simplified');
+        if (!in_array($level, $valid_levels)) {
+            return new WP_Error('invalid_level', __('Invalid cache level.', 'wp-performance-plus'));
+        }
+        
+        $result = $this->make_api_request(
+            'zones/' . $this->settings['zone_id'] . '/settings/cache_level',
+            array(
+                'method' => 'PATCH',
+                'body' => array('value' => $level)
+            )
+        );
+        
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        
+        $this->log('Cache level updated', array('level' => $level));
+        return true;
+    }
+    
+    /**
+     * Auto-detect zone ID based on current domain
+     * @return string|WP_Error
+     */
+    public function auto_detect_zone_id() {
+        $zones = $this->get_zones();
+        
+        if (is_wp_error($zones)) {
+            return $zones;
+        }
+        
+        $current_domain = wp_parse_url(site_url(), PHP_URL_HOST);
+        
+        foreach ($zones as $zone) {
+            if ($zone['name'] === $current_domain) {
+                return $zone['id'];
+            }
+        }
+        
+        return new WP_Error('zone_not_found', __('Zone not found for current domain.', 'wp-performance-plus'));
     }
 }
 

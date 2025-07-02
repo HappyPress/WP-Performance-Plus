@@ -28,17 +28,16 @@ class WP_Performance_Plus_Admin {
     private $version;
     private $settings;
     private $active_tab;
-    private $cdn_handlers;
+    private $cdn_manager;
 
     public function __construct($plugin_name, $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
         $this->settings = get_option('wp_performance_plus_settings', $this->get_default_settings());
-        $this->active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'basics';
-        $this->cdn_handlers = array();
+        $this->active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'caching';
 
-        // Initialize CDN handlers
-        $this->init_cdn_handlers();
+        // Initialize CDN manager
+        $this->init_cdn_manager();
 
         // Add WordPress hooks
         add_action('admin_enqueue_scripts', array($this, 'enqueue_styles'));
@@ -51,7 +50,9 @@ class WP_Performance_Plus_Admin {
         add_action('wp_ajax_wp_performance_plus_save_step', array($this, 'handle_save_step'));
         add_action('wp_ajax_wp_performance_plus_clear_cache', array($this, 'handle_clear_cache'));
         add_action('wp_ajax_wp_performance_plus_optimize_images', array($this, 'handle_optimize_images'));
-        add_action('wp_ajax_wp_performance_plus_optimize_database', array($this, 'handle_optimize_database'));
+        
+        // Add CDN-specific AJAX handlers
+        add_action('wp_ajax_wp_performance_plus_load_cdn_settings', array($this, 'handle_load_cdn_settings'));
 
         // Settings saved hooks
         add_action('wp_performance_plus_settings_saved', array($this, 'handle_settings_saved'));
@@ -154,18 +155,19 @@ class WP_Performance_Plus_Admin {
     }
 
     /**
-     * Initialize CDN handler classes
+     * Initialize CDN manager
      */
-    private function init_cdn_handlers() {
-        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-wp-performance-plus-cloudflare.php';
-        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-wp-performance-plus-keycdn.php';
-        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-wp-performance-plus-bunnycdn.php';
-        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-wp-performance-plus-cloudfront.php';
-        
-        $this->cdn_handlers['cloudflare'] = new WP_Performance_Plus_Cloudflare();
-        $this->cdn_handlers['keycdn'] = new WP_Performance_Plus_KeyCDN();
-        $this->cdn_handlers['bunnycdn'] = new WP_Performance_Plus_BunnyCDN();
-        $this->cdn_handlers['cloudfront'] = new WP_Performance_Plus_CloudFront();
+    private function init_cdn_manager() {
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-performance-plus-cdn-manager.php';
+        $this->cdn_manager = new WP_Performance_Plus_CDN_Manager();
+    }
+
+    /**
+     * Get CDN manager instance
+     * @return WP_Performance_Plus_CDN_Manager
+     */
+    public function get_cdn_manager() {
+        return $this->cdn_manager;
     }
 
     /**
@@ -720,5 +722,26 @@ class WP_Performance_Plus_Admin {
         if ($description) {
             echo '<p class="description">' . esc_html($description) . '</p>';
         }
+    }
+
+    /**
+     * Handle AJAX request to load CDN provider settings
+     */
+    public function handle_load_cdn_settings() {
+        check_ajax_referer('wp_performance_plus_wizard', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Permission denied.', 'wp-performance-plus'));
+        }
+
+        $provider = isset($_POST['provider']) ? sanitize_key($_POST['provider']) : '';
+
+        if (empty($provider)) {
+            wp_send_json_error(__('Provider is required.', 'wp-performance-plus'));
+        }
+
+        $html = $this->cdn_manager->get_provider_settings_html($provider);
+        
+        wp_send_json_success(array('html' => $html));
     }
 } 
