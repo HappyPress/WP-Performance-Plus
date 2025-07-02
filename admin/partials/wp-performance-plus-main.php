@@ -23,6 +23,27 @@ $optimization_enabled = isset($settings['enable_optimization']) ? $settings['ena
 $optimization_level = isset($settings['optimization_level']) ? $settings['optimization_level'] : 'balanced';
 $cdn_provider = isset($settings['cdn_provider']) ? $settings['cdn_provider'] : 'none';
 
+// Get CDN manager instance
+$plugin_instance = WP_Performance_Plus::get_instance();
+$cdn_manager = $plugin_instance->get_cdn_manager();
+$cdn_enabled = $cdn_manager && $cdn_manager->is_cdn_enabled();
+$active_provider = $cdn_enabled ? $cdn_manager->get_active_provider() : null;
+
+// Get CDN statistics if available
+$cdn_stats = array(
+    'requests_total' => 0,
+    'bandwidth_total' => 0,
+    'cache_hit_ratio' => 0,
+    'threats_blocked' => 0
+);
+
+if ($cdn_enabled && $active_provider) {
+    $stats_result = $active_provider->get_statistics();
+    if (!is_wp_error($stats_result)) {
+        $cdn_stats = $stats_result;
+    }
+}
+
 // Get performance metrics (placeholder data for now)
 $performance_metrics = array(
     'cache_size' => '142 MB',
@@ -56,14 +77,31 @@ $performance_metrics = array(
             </div>
         </div>
 
-        <div class="status-card status-info">
+        <!-- Enhanced CDN Status Card -->
+        <div class="status-card status-<?php echo $cdn_enabled ? 'active' : 'inactive'; ?> cdn-status-card">
             <div class="status-icon">
                 <span class="dashicons dashicons-cloud"></span>
             </div>
             <div class="status-content">
                 <h3><?php _e('CDN Status', 'wp-performance-plus'); ?></h3>
-                <p class="status-text"><?php echo ($cdn_provider !== 'none') ? ucfirst($cdn_provider) : __('Not Configured', 'wp-performance-plus'); ?></p>
-                <p class="status-level"><?php echo ($cdn_provider !== 'none') ? __('Active', 'wp-performance-plus') : __('Inactive', 'wp-performance-plus'); ?></p>
+                <p class="status-text">
+                    <?php if ($cdn_enabled): ?>
+                        <?php echo ucfirst(str_replace('WP_Performance_Plus_', '', get_class($active_provider))); ?>
+                        <span class="status-indicator active"></span>
+                    <?php else: ?>
+                        <?php _e('Not Configured', 'wp-performance-plus'); ?>
+                        <span class="status-indicator inactive"></span>
+                    <?php endif; ?>
+                </p>
+                <p class="status-level">
+                    <?php if ($cdn_enabled): ?>
+                        <?php printf(__('Hit Ratio: %s%%', 'wp-performance-plus'), $cdn_stats['cache_hit_ratio']); ?>
+                    <?php else: ?>
+                        <a href="<?php echo admin_url('admin.php?page=wp-performance-plus-settings&tab=cdn'); ?>" class="configure-link">
+                            <?php _e('Configure CDN', 'wp-performance-plus'); ?>
+                        </a>
+                    <?php endif; ?>
+                </p>
             </div>
         </div>
 
@@ -90,10 +128,43 @@ $performance_metrics = array(
         </div>
     </div>
 
+    <!-- CDN Performance Summary (only show if CDN enabled) -->
+    <?php if ($cdn_enabled): ?>
+    <div class="wp-performance-plus-cdn-summary">
+        <h2>
+            <span class="dashicons dashicons-networking"></span>
+            <?php _e('CDN Performance Summary', 'wp-performance-plus'); ?>
+            <span class="refresh-stats" data-action="refresh_cdn_stats">
+                <span class="dashicons dashicons-update-alt"></span>
+            </span>
+        </h2>
+        <div class="cdn-metrics-grid">
+            <div class="cdn-metric">
+                <div class="metric-value" id="cdn-requests-total"><?php echo number_format($cdn_stats['requests_total']); ?></div>
+                <div class="metric-label"><?php _e('Requests (24h)', 'wp-performance-plus'); ?></div>
+            </div>
+            <div class="cdn-metric">
+                <div class="metric-value" id="cdn-bandwidth-total"><?php echo size_format($cdn_stats['bandwidth_total']); ?></div>
+                <div class="metric-label"><?php _e('Bandwidth (24h)', 'wp-performance-plus'); ?></div>
+            </div>
+            <div class="cdn-metric">
+                <div class="metric-value" id="cdn-cache-ratio"><?php echo $cdn_stats['cache_hit_ratio']; ?>%</div>
+                <div class="metric-label"><?php _e('Cache Hit Ratio', 'wp-performance-plus'); ?></div>
+            </div>
+            <?php if ($cdn_stats['threats_blocked'] > 0): ?>
+            <div class="cdn-metric">
+                <div class="metric-value" id="cdn-threats-blocked"><?php echo number_format($cdn_stats['threats_blocked']); ?></div>
+                <div class="metric-label"><?php _e('Threats Blocked', 'wp-performance-plus'); ?></div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Main Content Area -->
     <div class="wp-performance-plus-main-content">
         
-        <!-- Quick Actions Panel -->
+        <!-- Enhanced Quick Actions Panel -->
         <div class="wp-performance-plus-panel quick-actions">
             <h2><?php _e('Quick Actions', 'wp-performance-plus'); ?></h2>
             <div class="quick-actions-grid">
@@ -107,10 +178,22 @@ $performance_metrics = array(
                     <?php _e('Run Optimization', 'wp-performance-plus'); ?>
                 </button>
                 
-                <button type="button" class="button button-secondary action-btn" id="test-cdn">
+                <?php if ($cdn_enabled): ?>
+                <button type="button" class="button button-secondary action-btn" id="purge-cdn-cache">
                     <span class="dashicons dashicons-cloud"></span>
-                    <?php _e('Test CDN', 'wp-performance-plus'); ?>
+                    <?php _e('Purge CDN Cache', 'wp-performance-plus'); ?>
                 </button>
+                
+                <button type="button" class="button button-secondary action-btn" id="test-cdn-connection">
+                    <span class="dashicons dashicons-admin-plugins"></span>
+                    <?php _e('Test CDN Connection', 'wp-performance-plus'); ?>
+                </button>
+                <?php else: ?>
+                <button type="button" class="button button-secondary action-btn" id="setup-cdn">
+                    <span class="dashicons dashicons-cloud"></span>
+                    <?php _e('Setup CDN', 'wp-performance-plus'); ?>
+                </button>
+                <?php endif; ?>
                 
                 <button type="button" class="button button-secondary action-btn" id="analyze-performance">
                     <span class="dashicons dashicons-chart-line"></span>
@@ -154,28 +237,61 @@ $performance_metrics = array(
                     </table>
                 </div>
 
-                <!-- CDN Settings Preview -->
+                <!-- Enhanced CDN Settings Preview -->
                 <div class="settings-section">
-                    <h3><?php _e('CDN Configuration', 'wp-performance-plus'); ?></h3>
+                    <h3>
+                        <?php _e('CDN Configuration', 'wp-performance-plus'); ?>
+                        <a href="<?php echo admin_url('admin.php?page=wp-performance-plus-settings&tab=cdn'); ?>" class="button button-small">
+                            <?php _e('Advanced CDN Settings', 'wp-performance-plus'); ?>
+                        </a>
+                    </h3>
                     <table class="form-table">
                         <tr>
                             <th scope="row"><?php _e('CDN Provider', 'wp-performance-plus'); ?></th>
                             <td>
-                                <select name="wp_performance_plus_settings[cdn_provider]" class="regular-text">
+                                <select name="wp_performance_plus_settings[cdn_provider]" class="regular-text" id="dashboard-cdn-provider">
                                     <option value="none" <?php selected($cdn_provider, 'none'); ?>><?php _e('None', 'wp-performance-plus'); ?></option>
                                     <option value="cloudflare" <?php selected($cdn_provider, 'cloudflare'); ?>><?php _e('Cloudflare', 'wp-performance-plus'); ?></option>
-                                    <option value="stackpath" <?php selected($cdn_provider, 'stackpath'); ?>><?php _e('StackPath', 'wp-performance-plus'); ?></option>
                                     <option value="keycdn" <?php selected($cdn_provider, 'keycdn'); ?>><?php _e('KeyCDN', 'wp-performance-plus'); ?></option>
                                     <option value="bunnycdn" <?php selected($cdn_provider, 'bunnycdn'); ?>><?php _e('BunnyCDN', 'wp-performance-plus'); ?></option>
                                     <option value="cloudfront" <?php selected($cdn_provider, 'cloudfront'); ?>><?php _e('Amazon CloudFront', 'wp-performance-plus'); ?></option>
-                                    <option value="custom" <?php selected($cdn_provider, 'custom'); ?>><?php _e('Custom CDN', 'wp-performance-plus'); ?></option>
                                 </select>
                                 <p class="description">
                                     <?php _e('Select your CDN provider for optimized content delivery.', 'wp-performance-plus'); ?>
-                                    <a href="<?php echo admin_url('admin.php?page=wp-performance-plus-cdn'); ?>" class="button button-small"><?php _e('Configure CDN', 'wp-performance-plus'); ?></a>
+                                    <?php if ($cdn_enabled): ?>
+                                        <span class="cdn-status-inline">
+                                            <span class="status-dot active"></span>
+                                            <?php _e('Connected and Active', 'wp-performance-plus'); ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </p>
                             </td>
                         </tr>
+                        <?php if ($cdn_enabled): ?>
+                        <tr>
+                            <th scope="row"><?php _e('CDN File Types', 'wp-performance-plus'); ?></th>
+                            <td>
+                                <div class="cdn-file-types">
+                                    <label class="inline-checkbox">
+                                        <input type="checkbox" name="wp_performance_plus_settings[cdn_images]" value="1" <?php checked(1, isset($settings['cdn_images']) ? $settings['cdn_images'] : false); ?> />
+                                        <?php _e('Images', 'wp-performance-plus'); ?>
+                                    </label>
+                                    <label class="inline-checkbox">
+                                        <input type="checkbox" name="wp_performance_plus_settings[cdn_css]" value="1" <?php checked(1, isset($settings['cdn_css']) ? $settings['cdn_css'] : false); ?> />
+                                        <?php _e('CSS', 'wp-performance-plus'); ?>
+                                    </label>
+                                    <label class="inline-checkbox">
+                                        <input type="checkbox" name="wp_performance_plus_settings[cdn_js]" value="1" <?php checked(1, isset($settings['cdn_js']) ? $settings['cdn_js'] : false); ?> />
+                                        <?php _e('JavaScript', 'wp-performance-plus'); ?>
+                                    </label>
+                                    <label class="inline-checkbox">
+                                        <input type="checkbox" name="wp_performance_plus_settings[cdn_fonts]" value="1" <?php checked(1, isset($settings['cdn_fonts']) ? $settings['cdn_fonts'] : false); ?> />
+                                        <?php _e('Fonts', 'wp-performance-plus'); ?>
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
                     </table>
                 </div>
 
@@ -233,7 +349,7 @@ $performance_metrics = array(
             </form>
         </div>
 
-        <!-- Performance Insights -->
+        <!-- Enhanced Performance Insights -->
         <div class="wp-performance-plus-panel performance-insights">
             <h2><?php _e('Performance Insights', 'wp-performance-plus'); ?></h2>
             
@@ -250,26 +366,42 @@ $performance_metrics = array(
                 <div class="insight-item">
                     <h4><?php _e('Cache Hit Rate', 'wp-performance-plus'); ?></h4>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 78%"></div>
+                        <div class="progress-fill" style="width: <?php echo $cdn_enabled ? $cdn_stats['cache_hit_ratio'] : 78; ?>%"></div>
                     </div>
-                    <p>78% <?php _e('cache efficiency', 'wp-performance-plus'); ?></p>
+                    <p>
+                        <?php echo $cdn_enabled ? $cdn_stats['cache_hit_ratio'] : 78; ?>% 
+                        <?php _e('cache efficiency', 'wp-performance-plus'); ?>
+                        <?php if ($cdn_enabled): ?>
+                            <small>(<?php _e('CDN enabled', 'wp-performance-plus'); ?>)</small>
+                        <?php endif; ?>
+                    </p>
                 </div>
 
                 <div class="insight-item">
-                    <h4><?php _e('Optimization Potential', 'wp-performance-plus'); ?></h4>
+                    <h4><?php _e('Optimization Recommendations', 'wp-performance-plus'); ?></h4>
                     <ul class="optimization-list">
                         <li class="optimization-item">
-                            <span class="status-dot green"></span>
-                            <?php _e('Images optimized', 'wp-performance-plus'); ?>
+                            <span class="status-dot <?php echo $cdn_enabled ? 'green' : 'orange'; ?>"></span>
+                            <?php if ($cdn_enabled): ?>
+                                <?php _e('CDN configured and active', 'wp-performance-plus'); ?>
+                            <?php else: ?>
+                                <?php _e('Setup CDN for better performance', 'wp-performance-plus'); ?>
+                            <?php endif; ?>
                         </li>
+                        <li class="optimization-item">
+                            <span class="status-dot <?php echo isset($settings['minify_css']) && $settings['minify_css'] ? 'green' : 'orange'; ?>"></span>
+                            <?php _e('CSS optimization', 'wp-performance-plus'); ?>
+                        </li>
+                        <li class="optimization-item">
+                            <span class="status-dot <?php echo isset($settings['minify_js']) && $settings['minify_js'] ? 'green' : 'red'; ?>"></span>
+                            <?php _e('JavaScript optimization', 'wp-performance-plus'); ?>
+                        </li>
+                        <?php if ($cdn_enabled && $cdn_stats['cache_hit_ratio'] < 80): ?>
                         <li class="optimization-item">
                             <span class="status-dot orange"></span>
-                            <?php _e('CSS can be improved', 'wp-performance-plus'); ?>
+                            <?php _e('CDN cache ratio can be improved', 'wp-performance-plus'); ?>
                         </li>
-                        <li class="optimization-item">
-                            <span class="status-dot red"></span>
-                            <?php _e('JS optimization needed', 'wp-performance-plus'); ?>
-                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -286,6 +418,15 @@ $performance_metrics = array(
                         <span class="activity-time"><?php _e('2 hours ago', 'wp-performance-plus'); ?></span>
                     </div>
                 </div>
+                <?php if ($cdn_enabled): ?>
+                <div class="activity-item">
+                    <span class="activity-icon dashicons dashicons-cloud"></span>
+                    <div class="activity-content">
+                        <strong><?php printf(__('CDN cache purged (%s)', 'wp-performance-plus'), ucfirst(str_replace('WP_Performance_Plus_', '', get_class($active_provider)))); ?></strong>
+                        <span class="activity-time"><?php _e('4 hours ago', 'wp-performance-plus'); ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <div class="activity-item">
                     <span class="activity-icon dashicons dashicons-performance"></span>
                     <div class="activity-content">
@@ -294,9 +435,9 @@ $performance_metrics = array(
                     </div>
                 </div>
                 <div class="activity-item">
-                    <span class="activity-icon dashicons dashicons-cloud"></span>
+                    <span class="activity-icon dashicons dashicons-admin-settings"></span>
                     <div class="activity-content">
-                        <strong><?php _e('CDN configuration updated', 'wp-performance-plus'); ?></strong>
+                        <strong><?php _e('Settings updated', 'wp-performance-plus'); ?></strong>
                         <span class="activity-time"><?php _e('3 days ago', 'wp-performance-plus'); ?></span>
                     </div>
                 </div>
@@ -316,6 +457,7 @@ $performance_metrics = array(
 
 <script type="text/javascript">
 jQuery(document).ready(function($) {
+    var nonce = '<?php echo wp_create_nonce('wp_performance_plus_wizard'); ?>';
     
     // Quick action handlers
     $('#clear-cache').on('click', function() {
@@ -326,30 +468,84 @@ jQuery(document).ready(function($) {
         performQuickAction('run_optimization', '<?php _e('Running optimization...', 'wp-performance-plus'); ?>');
     });
     
-    $('#test-cdn').on('click', function() {
+    $('#purge-cdn-cache').on('click', function() {
+        if (confirm('<?php _e('Are you sure you want to purge all CDN cache?', 'wp-performance-plus'); ?>')) {
+            performQuickAction('purge_cdn', '<?php _e('Purging CDN cache...', 'wp-performance-plus'); ?>');
+        }
+    });
+    
+    $('#test-cdn-connection').on('click', function() {
         performQuickAction('test_cdn', '<?php _e('Testing CDN connection...', 'wp-performance-plus'); ?>');
+    });
+    
+    $('#setup-cdn').on('click', function() {
+        window.location.href = '<?php echo admin_url('admin.php?page=wp-performance-plus-settings&tab=cdn'); ?>';
     });
     
     $('#analyze-performance').on('click', function() {
         performQuickAction('analyze_performance', '<?php _e('Analyzing performance...', 'wp-performance-plus'); ?>');
     });
     
+    // Refresh CDN stats
+    $('.refresh-stats').on('click', function() {
+        var $this = $(this);
+        var originalHtml = $this.html();
+        
+        $this.html('<span class="dashicons dashicons-update-alt spin"></span>');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'wp_performance_plus_get_cdn_stats',
+                nonce: nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    var stats = response.data;
+                    $('#cdn-requests-total').text(stats.requests_total.toLocaleString());
+                    $('#cdn-bandwidth-total').text(formatBytes(stats.bandwidth_total));
+                    $('#cdn-cache-ratio').text(stats.cache_hit_ratio + '%');
+                    if ($('#cdn-threats-blocked').length) {
+                        $('#cdn-threats-blocked').text(stats.threats_blocked.toLocaleString());
+                    }
+                    showNotice('<?php _e('CDN statistics updated', 'wp-performance-plus'); ?>', 'success');
+                } else {
+                    showNotice('<?php _e('Failed to refresh CDN statistics', 'wp-performance-plus'); ?>', 'error');
+                }
+            },
+            error: function() {
+                showNotice('<?php _e('Failed to refresh CDN statistics', 'wp-performance-plus'); ?>', 'error');
+            },
+            complete: function() {
+                $this.html(originalHtml);
+            }
+        });
+    });
+    
     function performQuickAction(action, loadingText) {
         showLoading(loadingText);
         
         $.ajax({
-            url: wp_performance_plus_ajax.ajax_url,
+            url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'wp_performance_plus_' + action,
-                nonce: wp_performance_plus_ajax.nonce
+                nonce: nonce
             },
             success: function(response) {
                 hideLoading();
                 if (response.success) {
-                    showNotice(response.data.message, 'success');
+                    showNotice(response.data || '<?php _e('Action completed successfully', 'wp-performance-plus'); ?>', 'success');
+                    
+                    // Refresh page for some actions
+                    if (action === 'clear_cache' || action === 'purge_cdn') {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    }
                 } else {
-                    showNotice(response.data.message || '<?php _e('An error occurred', 'wp-performance-plus'); ?>', 'error');
+                    showNotice(response.data || '<?php _e('An error occurred', 'wp-performance-plus'); ?>', 'error');
                 }
             },
             error: function() {
@@ -379,5 +575,14 @@ jQuery(document).ready(function($) {
             });
         }, 3000);
     }
+    
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        var k = 1024;
+        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
 });
+</script> 
 </script> 
